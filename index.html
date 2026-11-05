@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>くちぐせみっけ - 口癖改善アプリ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f0f4ff;--card:#fff;--primary:#2563eb;--primary-light:#dbeafe;
+  --primary-dark:#1d4ed8;--text:#1e293b;--text2:#64748b;--text3:#94a3b8;
+  --border:#e2e8f0;--success:#10b981;--warning:#f59e0b;--danger:#ef4444;
+  --radius:16px;--radius-sm:10px;--shadow:0 2px 12px rgba(37,99,235,0.08);
+}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.app{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+.header{background:var(--card);padding:14px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.header-logo{display:flex;align-items:center;gap:8px}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,#2563eb,#60a5fa);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px}
+.logo-text{font-family:'DM Sans',sans-serif;font-size:18px;font-weight:700;color:var(--primary)}
+.header-btn{width:36px;height:36px;border:none;background:var(--primary-light);border-radius:10px;color:var(--primary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s}
+.header-btn:hover{background:var(--primary);color:#fff}
+.header-right{display:flex;gap:8px}
+.nav{background:var(--card);border-top:1px solid var(--border);display:flex;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:100;padding:8px 0 12px}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px;border:none;background:none;transition:all .2s}
+.nav-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--text3);transition:all .2s}
+.nav-label{font-size:10px;color:var(--text3);font-weight:500}
+.nav-item.active .nav-icon{background:var(--primary-light);color:var(--primary)}
+.nav-item.active .nav-label{color:var(--primary)}
+.page{display:none;flex:1;overflow-y:auto;padding:14px 14px 86px}
+.page.active{display:block}
+.card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.card-title{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.record-hero{background:linear-gradient(135deg,#1d4ed8,#3b82f6,#60a5fa);border-radius:var(--radius);padding:20px 20px 16px;margin-bottom:12px;text-align:center;position:relative;overflow:hidden}
+.record-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;background:rgba(255,255,255,.07);border-radius:50%}
+.record-hint{color:rgba(255,255,255,.8);font-size:13px;margin-bottom:18px}
+.record-btn{width:92px;height:92px;border-radius:50%;border:none;background:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;cursor:pointer;position:relative;transition:all .3s;font-size:34px}
+.record-btn.recording{background:#fee2e2;animation:rpulse 1.4s infinite}
+@keyframes rpulse{0%{box-shadow:0 0 0 0 rgba(255,255,255,.4)}70%{box-shadow:0 0 0 18px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
+.record-time{color:#fff;font-size:26px;font-family:'DM Sans',sans-serif;font-weight:700}
+.record-status{color:rgba(255,255,255,.75);font-size:12px;margin-top:4px;min-height:18px}
+.waveform{height:36px;display:flex;align-items:center;justify-content:center;gap:2px;margin-top:12px}
+.wave-bar{width:3px;border-radius:2px;background:rgba(255,255,255,.45);transition:height .1s}
+.stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.stat-card{background:var(--card);border-radius:var(--radius-sm);padding:10px 6px;text-align:center;box-shadow:var(--shadow)}
+.stat-num{font-size:18px;font-weight:700;font-family:'DM Sans',sans-serif;color:var(--primary)}
+.stat-label{font-size:10px;color:var(--text2);margin-top:2px}
+.live-box{background:#f8faff;border:1.5px solid var(--primary-light);border-radius:12px;padding:12px;min-height:80px;font-size:13px;line-height:1.9;color:var(--text);position:relative}
+.live-cursor{display:inline-block;width:2px;height:14px;background:var(--primary);animation:blink .8s infinite;vertical-align:middle;margin-left:2px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.live-label{position:absolute;top:-10px;left:12px;background:var(--primary);color:#fff;font-size:10px;padding:2px 8px;border-radius:6px;font-weight:700}
+mark.habit{border-radius:3px;padding:0 2px}
+.mark-red{background:#fee2e2;color:#dc2626}
+.mark-orange{background:#ffedd5;color:#c2410c}
+.mark-blue{background:#dbeafe;color:#1d4ed8}
+.mark-purple{background:#ede9fe;color:#6d28d9}
+.mark-pink{background:#fce7f3;color:#be185d}
+.mark-cyan{background:#cffafe;color:#0e7490}
+.h-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.h-item:last-child{border-bottom:none}
+.h-icon{width:38px;height:38px;border-radius:11px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:15px;flex-shrink:0}
+.h-info{flex:1}
+.h-title{font-size:13px;font-weight:500}
+.h-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.h-rate{font-size:15px;font-weight:700;font-family:'DM Sans',sans-serif;color:var(--primary);text-align:right}
+.h-rlabel{font-size:10px;color:var(--text3)}
+.tabs{display:flex;background:var(--border);border-radius:10px;padding:3px;margin-bottom:14px}
+.tab{flex:1;padding:6px;border:none;background:none;border-radius:7px;font-size:12px;cursor:pointer;font-family:'Noto Sans JP',sans-serif;font-weight:500;color:var(--text2);transition:all .2s}
+.tab.active{background:#fff;color:var(--primary);box-shadow:var(--shadow)}
+.timeline-item{display:flex;align-items:center;gap:8px;padding:7px;border-radius:9px;margin-bottom:4px;cursor:pointer;transition:background .2s}
+.timeline-item:hover{background:var(--primary-light)}
+.t-dot{width:7px;height:7px;border-radius:50%;background:var(--primary);flex-shrink:0}
+.t-text{flex:1;font-size:13px}
+.t-time{font-size:11px;color:var(--text3);background:var(--bg);padding:2px 6px;border-radius:6px}
+.habit-badge{padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700}
+.b-blue{background:#dbeafe;color:#1e40af}
+.b-purple{background:#ede9fe;color:#5b21b6}
+.b-orange{background:#ffedd5;color:#c2410c}
+.b-pink{background:#fce7f3;color:#9d174d}
+.b-green{background:#dcfce7;color:#15803d}
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cat-item{background:var(--bg);border-radius:10px;padding:10px}
+.cat-name{font-size:11px;color:var(--text2);font-weight:700;margin-bottom:4px}
+.cat-num{font-size:17px;font-weight:700;color:var(--primary);font-family:'DM Sans',sans-serif}
+.cat-track{height:4px;background:var(--border);border-radius:2px;margin-top:5px;overflow:hidden}
+.cat-fill{height:100%;border-radius:2px}
+.ranking-item{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)}
+.ranking-item:last-child{border-bottom:none}
+.rank-left{display:flex;align-items:center;gap:8px}
+.rank-word{font-size:14px;font-weight:500}
+.count-pill{background:var(--primary);color:#fff;border-radius:20px;padding:2px 8px;font-size:12px;font-weight:700}
+.advice-card{background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #bfdbfe;border-radius:var(--radius);padding:14px;margin-bottom:12px}
+.advice-hd{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.advice-icon{width:30px;height:30px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px}
+.advice-title{font-size:13px;font-weight:700;color:#1e3a8a}
+.advice-text{font-size:13px;color:#1e3a5f;line-height:1.75}
+.tag{display:inline-block;background:var(--primary);color:#fff;border-radius:20px;padding:2px 9px;font-size:11px;margin:6px 3px 0 0}
+.btn{padding:9px 18px;border:none;border-radius:10px;font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-dark)}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed}
+.btn-full{width:100%;justify-content:center}
+.loading-dots{display:inline-flex;gap:3px;align-items:center}
+.loading-dots span{width:5px;height:5px;border-radius:50%;background:currentColor;animation:dot 1.2s infinite}
+.loading-dots span:nth-child(2){animation-delay:.2s}
+.loading-dots span:nth-child(3){animation-delay:.4s}
+@keyframes dot{0%,80%,100%{opacity:.2}40%{opacity:1}}
+.prog-wrap{margin-bottom:10px}
+.prog-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.prog-bar{height:7px;background:var(--primary-light);border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#2563eb,#60a5fa);transition:width .8s}
+.streak-day{flex:1;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.streak-active{background:var(--primary);color:#fff}
+.streak-inactive{background:var(--primary-light);color:var(--text3)}
+.type-hero{background:linear-gradient(135deg,#7c3aed,#a855f7,#ec4899);border-radius:var(--radius);padding:18px;margin-bottom:12px;text-align:center;color:#fff}
+.type-code{display:inline-block;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.5);border-radius:12px;padding:7px 18px;font-size:26px;font-weight:700;font-family:'DM Sans',sans-serif;margin-bottom:8px;letter-spacing:4px}
+.type-name{font-size:18px;font-weight:700;margin-bottom:3px}
+.type-sub{font-size:12px;opacity:.85}
+.axis-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.axis-card{background:var(--card);border-radius:var(--radius-sm);padding:10px;box-shadow:var(--shadow)}
+.axis-label{font-size:10px;color:var(--text2);font-weight:700;margin-bottom:5px}
+.axis-row{display:flex;align-items:center;gap:5px;font-size:11px}
+.axis-l{font-weight:700;color:var(--primary);min-width:11px;font-family:'DM Sans',sans-serif}
+.axis-track{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.axis-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--primary),#60a5fa)}
+.str-item{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+.str-item:last-child{border-bottom:none}
+.str-ic{width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.str-ok{background:var(--primary-light);color:var(--primary)}
+.str-ng{background:#fee2e2;color:#dc2626}
+.toast{position:fixed;top:72px;left:50%;transform:translateX(-50%) translateY(-16px);background:#1e293b;color:#fff;padding:9px 18px;border-radius:10px;font-size:13px;z-index:300;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.modal-ov.show{display:flex}
+.modal{background:#fff;border-radius:var(--radius) var(--radius) 0 0;padding:20px;width:100%;max-width:430px}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:14px}
+.modal-header-sticky{position:sticky;top:-20px;margin:-20px -20px 14px;padding:16px 20px 10px;background:var(--card);z-index:30;display:flex;align-items:center;justify-content:space-between;gap:10px;border-radius:var(--radius) var(--radius) 0 0}
+.modal-close-btn{width:30px;height:30px;border-radius:50%;border:none;background:#f1f5f9;color:#475569;font-size:16px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.15);flex-shrink:0}
+.modal-close-btn:active{background:#e2e8f0}
+.m-input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:9px 13px;font-size:14px;font-family:'Noto Sans JP',sans-serif;outline:none;margin-bottom:8px;transition:border .2s}
+.m-input:focus{border-color:var(--primary)}
+.m-select{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:9px 13px;font-size:14px;font-family:'Noto Sans JP',sans-serif;outline:none;margin-bottom:12px;background:#fff}
+.permission-banner{background:#fff3cd;border:1px solid #ffc107;border-radius:12px;padding:12px;margin-bottom:12px;font-size:13px;display:none}
+.permission-banner.show{display:block}
+.chart-wrap{position:relative;height:150px;margin-bottom:6px}
+
+/* ===== ANTHROPIC API KEY SETUP ===== */
+.api-setup{background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:14px;margin-bottom:12px}
+.api-setup-title{font-size:13px;font-weight:700;color:#15803d;margin-bottom:6px}
+.api-setup p{font-size:12px;color:#166534;line-height:1.6;margin-bottom:8px}
+.api-input-row{display:flex;gap:6px}
+.api-input{flex:1;border:1.5px solid #86efac;border-radius:8px;padding:7px 10px;font-size:12px;font-family:monospace;outline:none}
+.api-input:focus{border-color:#16a34a}
+.api-save-btn{background:#16a34a;color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer}
+.api-status{font-size:11px;margin-top:6px}
+
+/* ===== TOPIC SUGGESTION ===== */
+.topic-card{background:linear-gradient(135deg,#fff7ed,#ffedd5);border:1px solid #fed7aa;border-radius:var(--radius);padding:14px;margin-bottom:12px}
+.topic-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.topic-title{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#9a3412}
+.topic-cat-badge{background:#fff;color:#c2410c;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.topic-select{width:100%;border:1.5px solid #fed7aa;border-radius:8px;padding:6px 8px;font-size:11px;font-family:'Noto Sans JP',sans-serif;color:#9a3412;background:#fff;margin-bottom:10px;outline:none}
+.topic-text{font-size:15px;font-weight:500;color:#7c2d12;line-height:1.7;margin-bottom:12px;min-height:44px}
+.topic-actions{display:flex;gap:8px}
+.topic-btn{flex:1;background:#fff;border:1px solid #fed7aa;color:#c2410c;border-radius:8px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans JP',sans-serif;display:flex;align-items:center;justify-content:center;gap:4px;transition:all .2s}
+.topic-btn:hover{background:#ffedd5}
+.topic-btn:disabled{opacity:.6;cursor:not-allowed}
+.topic-btn.ai{background:var(--primary);border-color:var(--primary);color:#fff}
+.topic-btn.ai:hover{background:var(--primary-dark)}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-logo">
+      <div class="logo-icon">🎙</div>
+      <span class="logo-text">くちぐせみっけ</span>
+    </div>
+    <div class="header-right">
+      <button class="header-btn" onclick="showModal()">＋</button>
+      <button class="header-btn" onclick="showToast('設定は近日公開！')">⚙</button>
+    </div>
+  </div>
+
+  <!-- PAGE: RECORD -->
+  <div id="page-record" class="page active">
+
+  
+
+    <div id="permBanner" class="permission-banner">
+      ⚠️ マイクへのアクセス許可が必要です。ブラウザのアドレスバーから許可してください。
+    </div>
+
+    <div class="record-hero">
+      <div class="record-hint" id="recHint">タップして録音開始</div>
+      <button class="record-btn" id="recordBtn" onclick="toggleRecord()">
+        <span id="recIcon">🎙</span>
+      </button>
+      <div class="record-time" id="recordTime">00:00</div>
+      <div class="record-status" id="recordStatus"></div>
+      <div class="waveform" id="waveform">
+        <div class="wave-bar" style="height:6px"></div><div class="wave-bar" style="height:18px"></div><div class="wave-bar" style="height:10px"></div><div class="wave-bar" style="height:28px"></div><div class="wave-bar" style="height:14px"></div><div class="wave-bar" style="height:22px"></div><div class="wave-bar" style="height:8px"></div><div class="wave-bar" style="height:26px"></div><div class="wave-bar" style="height:12px"></div><div class="wave-bar" style="height:16px"></div><div class="wave-bar" style="height:20px"></div><div class="wave-bar" style="height:6px"></div>
+      </div>
+    </div>
+
+    <div class="card topic-card" id="topicCard">
+      <div class="topic-hd">
+        <div class="topic-title">💡 話すトピック</div>
+        <span class="topic-cat-badge" id="topicCatBadge">お題</span>
+      </div>
+      <select class="topic-select" id="topicCatSelect" onchange="nextTopic()">
+        <option value="random">🎲 ランダム（すべて）</option>
+        <option value="自己紹介">自己紹介</option>
+        <option value="日常">日常</option>
+        <option value="仕事・キャリア">仕事・キャリア</option>
+        <option value="趣味・好きなこと">趣味・好きなこと</option>
+        <option value="意見・ディスカッション">意見・ディスカッション</option>
+        <option value="未来・目標">未来・目標</option>
+      </select>
+      <div class="topic-text" id="topicText">「次のお題」を押すと、話すテーマや質問が表示されます。</div>
+      <div class="topic-actions">
+        <button class="topic-btn" onclick="nextTopic()">🔄 次のお題</button>
+        <button class="topic-btn ai" id="aiTopicBtn" onclick="generateAiTopic()">✨ AIにお題を考えてもらう</button>
+      </div>
+    </div>
+
+    <div class="card" id="liveCard">
+      <div class="card-title">リアルタイム文字起こし</div>
+      <div class="live-box" id="liveBox">
+        <span class="live-label">LIVE</span>
+        <span id="liveText" style="color:var(--text3)">録音を開始すると、ここにリアルタイムで文字起こしが表示されます。</span>
+      </div>
+      <div id="liveHabits" style="margin-top:8px;min-height:24px;font-size:12px;color:var(--text2)"></div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num" id="totalRec">0</div><div class="stat-label">本日の録音</div></div>
+      <div class="stat-card"><div class="stat-num" id="totalHabits">0</div><div class="stat-label">口癖合計</div></div>
+      <div class="stat-card"><div class="stat-num" id="habitRate">—</div><div class="stat-label">口癖率</div></div>
+    </div>
+
+    <div class="card" id="historyCard">
+      <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
+        <span>録音履歴</span>
+        <button id="historySelectBtn" style="display:none;border:none;background:none;color:var(--primary);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:normal;text-transform:none" onclick="toggleHistorySelectMode()">選択して削除</button>
+      </div>
+      <div id="historyList"><p style="font-size:13px;color:var(--text3)">まだ録音がありません。</p></div>
+      <div id="historyBulkBar" style="display:none;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+        <span id="historySelectedCount" style="font-size:12px;color:var(--text2)">0件選択中</span>
+        <div style="display:flex;gap:6px">
+          <button class="btn" style="background:var(--bg);color:var(--text2);padding:6px 12px;font-size:12px" onclick="toggleHistorySelectMode()">キャンセル</button>
+          <button class="btn" style="background:var(--danger);color:#fff;padding:6px 12px;font-size:12px" onclick="deleteSelectedSessions()">削除する</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: ANALYSIS -->
+  <div id="page-analysis" class="page">
+    <div id="noAnalysis" class="card" style="text-align:center;padding:32px">
+      <div style="font-size:32px;margin-bottom:8px">🎙</div>
+      <p style="color:var(--text2);font-size:13px">録音後に分析結果がここに表示されます。</p>
+    </div>
+    <div id="analysisContent" style="display:none">
+      <div class="card">
+        <div class="card-title">文字起こし</div>
+        <p id="transcriptDisplay" style="font-size:13px;line-height:1.9"></p>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="an-words">0</div><div class="stat-label">総単語数</div></div>
+        <div class="stat-card"><div class="stat-num" id="an-count">0</div><div class="stat-label">口癖回数</div></div>
+        <div class="stat-card"><div class="stat-num" id="an-rate">0%</div><div class="stat-label">口癖率</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">カテゴリー別</div>
+        <div class="cat-grid" id="catGrid"></div>
+      </div>
+      <div class="card">
+        <div class="tabs">
+          <button class="tab active" onclick="switchTab(this,'tl')">タイムライン</button>
+          <button class="tab" onclick="switchTab(this,'rk')">ランキング</button>
+        </div>
+        <div id="tl-content"><div id="timelineList"></div></div>
+        <div id="rk-content" style="display:none"><div id="rankingList"></div></div>
+      </div>
+      <div class="advice-card">
+        <div class="advice-hd">
+          <div class="advice-icon">🤖</div>
+          <div class="advice-title">AIアドバイス</div>
+        </div>
+        <p class="advice-text" id="adviceText">分析ボタンを押すとAIがアドバイスを生成します。</p>
+        <div id="adviceTags"></div>
+        <br>
+        <button class="btn btn-primary" id="adviceBtn" onclick="generateAdvice()">✨ AIで詳しく分析する</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: GROWTH -->
+  <div id="page-growth" class="page">
+    <div class="card">
+      <div class="card-title">口癖率の推移</div>
+      <div class="chart-wrap">
+        <canvas id="growthChart"></canvas>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num" id="g-rec">0</div><div class="stat-label">録音回数</div></div>
+      <div class="stat-card"><div class="stat-num" id="g-improve" style="color:var(--success)">—</div><div class="stat-label">改善率</div></div>
+      <div class="stat-card"><div class="stat-num" id="g-time">0分</div><div class="stat-label">総時間</div></div>
+    </div>
+    <div class="card" id="growthHabits">
+      <div class="card-title">よく出る口癖</div>
+      <p style="font-size:13px;color:var(--text3)">録音が増えると表示されます。</p>
+    </div>
+    <div class="card">
+      <div class="card-title">継続ストリーク</div>
+      <div style="display:flex;align-items:center;gap:12px;padding:6px 0">
+        <div style="font-size:32px">🔥</div>
+        <div><div style="font-size:22px;font-weight:700;font-family:'DM Sans',sans-serif;color:var(--primary)" id="streakNum">0回記録</div><div style="font-size:12px;color:var(--text2)">毎日練習を続けよう！</div></div>
+      </div>
+      <div style="display:flex;gap:5px;margin-top:8px" id="streakDays"></div>
+    </div>
+  </div>
+
+  <!-- PAGE: TYPE -->
+  <div id="page-type" class="page">
+    <div class="type-hero">
+      <div class="type-code" id="typeCode">——</div>
+      <div class="type-name" id="typeName">まだ診断されていません</div>
+      <div class="type-sub" id="typeSub">録音後に診断が可能になります</div>
+    </div>
+    <div class="axis-grid">
+      <div class="axis-card"><div class="axis-label">感情 / 論理</div><div class="axis-row"><span class="axis-l">E</span><div class="axis-track"><div class="axis-fill" id="ax-el" style="width:50%"></div></div><span style="font-size:10px;color:var(--text3)">L</span></div></div>
+      <div class="axis-card"><div class="axis-label">積極 / 慎重</div><div class="axis-row"><span class="axis-l">A</span><div class="axis-track"><div class="axis-fill" id="ax-ac" style="width:50%"></div></div><span style="font-size:10px;color:var(--text3)">C</span></div></div>
+      <div class="axis-card"><div class="axis-label">詳細 / 簡潔</div><div class="axis-row"><span class="axis-l">D</span><div class="axis-track"><div class="axis-fill" id="ax-ds" style="width:50%"></div></div><span style="font-size:10px;color:var(--text3)">S</span></div></div>
+      <div class="axis-card"><div class="axis-label">感情表現 / 客観</div><div class="axis-row"><span class="axis-l">F</span><div class="axis-track"><div class="axis-fill" id="ax-fo" style="width:50%"></div></div><span style="font-size:10px;color:var(--text3)">O</span></div></div>
+    </div>
+    <div class="card" id="typeStrengths" style="display:none">
+      <div class="card-title">あなたの強み</div>
+      <div id="strengthList"></div>
+    </div>
+    <div class="card" id="typeImprovements" style="display:none">
+      <div class="card-title">改善ポイント</div>
+      <div id="improvementList"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">診断を実行</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px">録音データをもとにAIが話し方タイプを診断します。</p>
+      <button class="btn btn-primary btn-full" id="diagBtn" onclick="runDiagnosis()">🔮 話し方タイプを診断する</button>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <button class="nav-item active" onclick="switchPage('record',this)"><div class="nav-icon">🎙</div><span class="nav-label">録音</span></button>
+    <button class="nav-item" onclick="switchPage('analysis',this)"><div class="nav-icon">📊</div><span class="nav-label">分析</span></button>
+    <button class="nav-item" onclick="switchPage('growth',this)"><div class="nav-icon">📈</div><span class="nav-label">成長</span></button>
+    <button class="nav-item" onclick="switchPage('type',this)"><div class="nav-icon">🧬</div><span class="nav-label">タイプ診断</span></button>
+  </nav>
+</div>
+
+<!-- MODAL -->
+<div class="modal-ov" id="habitModal">
+  <div class="modal" style="max-height:82vh;overflow-y:auto;position:relative">
+    <div class="modal-header-sticky">
+      <div class="modal-title" style="margin-bottom:0">口癖を管理する</div>
+      <button class="modal-close-btn" onclick="closeModal()" aria-label="閉じる">✕</button>
+    </div>
+    <input class="m-input" id="habitInput" placeholder="例：ぶっちゃけ、要は" maxlength="20">
+    <select class="m-select" id="habitCat">
+      <option value="相づち系">相づち系</option>
+      <option value="曖昧表現系">曖昧表現系</option>
+      <option value="若者言葉系">若者言葉系</option>
+      <option value="ビジネス系">ビジネス系</option>
+      <option value="その他">その他</option>
+    </select>
+    <div style="display:flex;gap:8px;margin-bottom:18px">
+      <button class="btn btn-primary" style="flex:1" onclick="addHabit()">追加する</button>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
+        <div class="card-title" style="margin-bottom:0">登録されている口癖一覧（<span id="habitCountNum">0</span>件）</div>
+        <button onclick="resetHabitsToDefault()" style="border:none;background:none;color:#dc2626;font-size:12px;cursor:pointer;text-decoration:underline;white-space:nowrap;padding:2px 0">初期状態にリセット</button>
+      </div>
+      <input class="m-input" id="habitSearchInput" placeholder="🔍 口癖を検索" oninput="renderHabitList()">
+      <div id="habitListContainer"></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+// ===== HABIT DICTIONARY =====
+const HABITS = {
+  '相づち系': [
+    'えっと','あの','その','なんか','うーん','そうですね','なるほど','たしかに','そうそう'
+  ],
+
+  '話しつなぎ系': [
+    'とりあえず','一応','ちなみに','ていうか','というか','だから','なので','それで',
+    'でね','まあ','ということで','うん','それから','こんな感じで','そんな感じで','えー','はい','じゃあ'
+  ],
+
+  '曖昧表現系': [
+    'みたいな','たぶん','おそらく','なんとなく','若干','ちょっと','だいたい','結構','知らんけど'
+  ],
+
+  '強調系': [
+    'めっちゃ','すごく','超','マジで','ガチで','本当に','かなり','圧倒的に','ものすごく','なんだ','やっぱ','やはり'
+  ],
+
+  '否定・言い訳系': [
+    'でも','いや','とはいえ','ただ','別に','しょうがない','仕方ない','どうせ'
+  ],
+
+  '自信がない系': [
+    'たぶんですけど','かもしれない','なんとも言えない','そんな感じ','微妙','どうなんだろう','と思います'
+  ],
+
+  '若者言葉系': [
+    'えぐい','やばい','それな','しんどい','ワンチャン','あざす','ゆうて','じゃね','待って','しぬ','むり','おもろ','そうなん？','しゃあない'
+  ],
+
+  'ビジネス系': [
+    '要するに','端的に言うと','結論から言うと','つまり','現状','基本的に','逆に','であります','のほうを','の方を'
+  ],
+
+  '無意識系': [
+    'なるほどですね','ですよね','そうなんですよ','なんですよね','って感じ','みたいな感じ',
+    'じゃないですか','と思うんですけど','以上です','ですね','さあ','えっ','ね。'],
+};
+const CAT_COLORS = {'相づち系':'#2563eb','話しつなぎ系':'#059669','曖昧表現系':'#7c3aed','強調系':'#dc2626','否定・言い訳系':'#db2777','自信がない系':'#d97706','若者言葉系':'#16a34a','ビジネス系':'#64748b','無意識系':'#9333ea','独り相づち':'#0891b2','その他':'#475569'};
+// 独り相づち：会話中の返答/応答としてではなく、文末で独立した発話として使われた
+// 「うん」「はい」だけを特別に検出して、このカテゴリでカウントする
+const SOLO_AIZUCHI_WORDS = ['うん', 'はい'];
+const SOLO_AIZUCHI_CAT = '独り相づち';
+// テキストを文の区切り（。！？）で分割し、区切られた1文がちょうどその単語のみ
+// （前後に読点や他の言葉を伴わない＝独立した発話）である回数を数える
+function countSoloAizuchi(text, word) {
+  return text.split(/[。！？]/).filter(seg => seg.trim() === word).length;
+}
+// habitRegistry: word -> category。デフォルト辞書とユーザー追加分をまとめて保持し、
+// 一覧表示・追加・削除をすべてこのレジストリに対して行う
+function buildDefaultHabitRegistry() {
+  const reg = {};
+  Object.entries(HABITS).forEach(([cat, words]) => words.forEach(word => { reg[word] = cat; }));
+  return reg;
+}
+let habitRegistry = buildDefaultHabitRegistry();
+
+// ===== TOPIC SUGGESTIONS =====
+const TOPICS = {
+  '自己紹介': [
+    '最近ハマっていることを教えてください',
+    '自分の性格を一言で表すとしたら？',
+    '小さい頃の将来の夢は何でしたか？',
+    '自分の強みだと思うところを教えてください',
+    '休日はどんな風に過ごすことが多いですか？'
+  ],
+  '日常': [
+    '今日一日を振り返って、一番印象に残った出来事は？',
+    '最近感動したことは何ですか？',
+    '最近行った場所でおすすめのスポットはありますか？',
+    '朝のルーティンを教えてください',
+    '最近読んだ本や見た映画で面白かったものは？'
+  ],
+  '仕事・キャリア': [
+    '今の仕事でやりがいを感じる瞬間は？',
+    '理想の働き方について教えてください',
+    '仕事で最近学んだことは何ですか？',
+    '5年後、どんな仕事をしていたいですか？',
+    'チームで仕事をする上で大切にしていることは？'
+  ],
+  '趣味・好きなこと': [
+    '一番好きな趣味について、魅力を説明してください',
+    '休みの日にやりたいことランキングを教えてください',
+    '最近始めたことや挑戦していることは？',
+    '好きな音楽や好きなアーティストについて教えてください',
+    '旅行するならどこに行きたいですか？その理由も教えてください'
+  ],
+  '意見・ディスカッション': [
+    'AIが普及した未来の社会について、どう思いますか？',
+    '理想のリーダー像とはどんなものだと思いますか？',
+    '仕事とプライベートのバランスをどう取るべきだと思いますか？',
+    '今の教育制度について改善すべき点はありますか？',
+    'SNSとの付き合い方について、あなたの考えを教えてください'
+  ],
+  '未来・目標': [
+    '1年後、どんな自分になっていたいですか？',
+    '今年チャレンジしたいことを教えてください',
+    '達成したい目標とその理由を教えてください',
+    '10年後の理想の生活について話してください',
+    '今、一番頑張っていることは何ですか？'
+  ],
+};
+let lastTopicText = '';
+
+function pickRandomTopic(selectedCat) {
+  const cats = (selectedCat && selectedCat !== 'random') ? [selectedCat] : Object.keys(TOPICS);
+  const chosenCat = cats[Math.floor(Math.random() * cats.length)];
+  const list = TOPICS[chosenCat];
+  let text = list[Math.floor(Math.random() * list.length)];
+  if (list.length > 1) {
+    let tries = 0;
+    while (text === lastTopicText && tries < 8) {
+      text = list[Math.floor(Math.random() * list.length)];
+      tries++;
+    }
+  }
+  lastTopicText = text;
+  return { cat: chosenCat, text };
+}
+
+function renderTopic({ cat, text }) {
+  document.getElementById('topicCatBadge').textContent = cat;
+  document.getElementById('topicText').textContent = text;
+}
+
+function nextTopic() {
+  const sel = document.getElementById('topicCatSelect').value;
+  renderTopic(pickRandomTopic(sel));
+}
+
+async function generateAiTopic() {
+  const btn = document.getElementById('aiTopicBtn');
+  const orig = btn.innerHTML;
+  btn.innerHTML = '<span class="loading-dots"><span></span><span></span><span></span></span> 考え中...';
+  btn.disabled = true;
+  try {
+    const allCounts = {};
+    sessions.forEach(s => Object.entries(s.habitCounts).forEach(([w, {count, cat}]) => {
+      if (!allCounts[cat]) allCounts[cat] = 0;
+      allCounts[cat] += count;
+    }));
+    const habitSummary = Object.entries(allCounts).map(([c, n]) => `${c}:${n}回`).join('、') || 'まだデータなし';
+    const sel = document.getElementById('topicCatSelect').value;
+    const catHint = (sel && sel !== 'random') ? `カテゴリーは「${sel}」にしてください。` : '';
+    const system = `あなたは話し方練習アプリのお題提案AIです。ユーザーが1〜2分間、自由に話す練習ができる日本語の質問・トピックを1つだけ考えてください。必ずJSON形式のみで返答してください（Markdownや前置き無し）：{"category":"カテゴリ名（自己紹介/日常/仕事・キャリア/趣味・好きなこと/意見・ディスカッション/未来・目標のいずれか）","question":"質問文"}`;
+    const userText = `これまでの口癖の傾向：${habitSummary}。${catHint}話しやすく、自然に話が広がる質問を1つ提案してください。`;
+    let text = await callGemini(system, userText, 200);
+    text = text.replace(/```json|```/g, '').trim();
+    const result = JSON.parse(text);
+    if (result.question) {
+      renderTopic({ cat: result.category || 'AIおすすめ', text: result.question });
+      showToast('AIがお題を考えました✨');
+    } else {
+      throw new Error('empty');
+    }
+  } catch (e) {
+    console.error('お題生成エラー:', e);
+    showToast('お題の生成に失敗しました。ローカルのお題を表示します');
+    nextTopic();
+  }
+  btn.innerHTML = orig;
+  btn.disabled = false;
+}
+
+
+window.addEventListener('load', () => { nextTopic(); });
+
+// ===== Gemini API helper =====
+async function callGemini(system, userText, maxTokens) {
+  // 自身(Vercel)のサーバーレス関数にリクエストを送る
+  const res = await fetch(`/api/gemini`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ system, userText, maxTokens })
+  });
+  
+  if (!res.ok) {
+    const errBody = await res.text();
+    throw new Error(`API error ${res.status}: ${errBody}`);
+  }
+  const data = await res.json();
+  const text = data?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
+  if (!text) {
+    throw new Error(`empty response`);
+  }
+  return text;
+}
+    
+
+// ===== STATE =====
+let recording = false;
+let mediaRecorder = null;
+let recognition = null;
+let timerInterval = null;
+let waveInterval = null;
+let seconds = 0;
+let fullTranscript = '';
+let interimTranscript = '';
+let sessions = [];
+let currentSession = null;
+let chartInst = null;
+
+// ===== PAGE NAV =====
+function switchPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'growth') setTimeout(renderGrowthPage, 100);
+}
+
+// ===== RECORDING =====
+async function toggleRecord() {
+  if (!recording) await startRecording();
+  else stopRecording();
+}
+
+async function startRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    recording = true;
+    seconds = 0;
+    fullTranscript = '';
+    interimTranscript = '';
+    currentSession = { startTime: Date.now(), timeline: [], habitCounts: {}, words: 0 };
+
+    document.getElementById('recIcon').textContent = '⏹';
+    document.getElementById('recordBtn').classList.add('recording');
+    document.getElementById('recHint').textContent = '録音中…';
+    document.getElementById('recordStatus').textContent = '';
+    document.getElementById('liveText').style.color = 'var(--text)';
+    document.getElementById('liveText').innerHTML = '';
+    document.getElementById('liveHabits').innerHTML = '';
+    document.getElementById('permBanner').classList.remove('show');
+
+    timerInterval = setInterval(() => {
+      seconds++;
+      const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+      const s = String(seconds % 60).padStart(2, '0');
+      document.getElementById('recordTime').textContent = m + ':' + s;
+    }, 1000);
+
+    waveInterval = setInterval(() => {
+      document.querySelectorAll('.wave-bar').forEach(b => {
+        b.style.height = (Math.random() * 26 + 4) + 'px';
+        b.style.opacity = '1';
+      });
+    }, 80);
+
+    setupSpeechRecognition();
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.start();
+    showToast('録音開始！話しかけてください🎙');
+  } catch (e) {
+    document.getElementById('permBanner').classList.add('show');
+    showToast('マイクの許可が必要です');
+    recording = false;
+  }
+}
+
+function stopRecording() {
+  recording = false;
+  if (recognition) { try { recognition.stop(); } catch(e){} recognition = null; }
+  if (mediaRecorder) { try { mediaRecorder.stop(); mediaRecorder.stream.getTracks().forEach(t => t.stop()); } catch(e){} }
+  clearInterval(timerInterval);
+  clearInterval(waveInterval);
+
+  document.getElementById('recIcon').textContent = '🎙';
+  document.getElementById('recordBtn').classList.remove('recording');
+  document.getElementById('recHint').textContent = 'タップして録音開始';
+  document.getElementById('recordStatus').textContent = '分析完了！分析タブで確認しよう';
+
+  const finalText = (fullTranscript + ' ' + interimTranscript).trim();
+  if (finalText) {
+    finishSession(finalText);
+  } else {
+    showToast('音声が検出されませんでした');
+  }
+}
+
+function setupSpeechRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { showToast('このブラウザは音声認識非対応です（Chrome推奨）'); return; }
+  recognition = new SR();
+  recognition.lang = 'ja-JP';
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.maxAlternatives = 1;
+
+  recognition.onresult = (e) => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) {
+        fullTranscript += t + '。';
+        detectHabitsInText(t, seconds);
+      } else {
+        interim += t;
+      }
+    }
+    interimTranscript = interim;
+    renderLiveTranscript(fullTranscript, interim);
+  };
+
+  recognition.onerror = (e) => {
+    if (e.error === 'not-allowed') {
+      document.getElementById('permBanner').classList.add('show');
+      stopRecording();
+    }
+  };
+
+  recognition.onend = () => {
+    if (recording) { try { recognition.start(); } catch(e){} }
+  };
+
+  recognition.start();
+}
+
+function renderLiveTranscript(finalText, interim) {
+  const el = document.getElementById('liveText');
+  let html = highlightHabits(finalText);
+  if (interim) html += `<span style="color:var(--text3)">${interim}</span>`;
+  html += '<span class="live-cursor"></span>';
+  el.innerHTML = html;
+}
+
+function highlightHabits(text) {
+  let result = text;
+  const allHabits = getAllHabits();
+  allHabits.sort((a, b) => b.word.length - a.word.length);
+  allHabits.forEach(({word, cat}) => {
+    // 同じ口癖が一回の録音内で2回以上出てきた場合のみ口癖としてハイライトする
+    const occurrences = text.split(word).length - 1;
+    if (occurrences < 2) return;
+    const color = cat === '相づち系' ? 'mark-blue' : cat === '曖昧表現系' ? 'mark-purple' : cat === '強調系' ? 'mark-red' : cat === '否定・言い訳系' ? 'mark-pink' : 'mark-orange';
+    result = result.split(word).join(`<mark class="habit ${color}">${word}</mark>`);
+  });
+  // 独り相づち：文末で独立した発話として使われた「うん」「はい」のみをハイライトする
+  // （「はい、わかりました」のような返答としての使用はハイライトしない）
+  SOLO_AIZUCHI_WORDS.forEach(word => {
+    if (countSoloAizuchi(text, word) < 2) return;
+    result = result.split(/([。！？])/).map(seg => seg.trim() === word ? `<mark class="habit mark-cyan">${word}</mark>` : seg).join('');
+  });
+  return result;
+}
+
+function registerHabitHit(word, cat, timeSec) {
+  if (!currentSession.habitCounts[word]) currentSession.habitCounts[word] = {count:0, cat};
+  currentSession.habitCounts[word].count++;
+  const m = String(Math.floor(timeSec / 60)).padStart(2, '0');
+  const s = String(timeSec % 60).padStart(2, '0');
+  currentSession.timeline.push({word, cat, time: m + ':' + s});
+  // 一回の録音の中で2回以上出てきたタイミングで口癖として通知する
+  if (currentSession.habitCounts[word].count >= 2) {
+    const lh = document.getElementById('liveHabits');
+    const pill = document.createElement('span');
+    pill.style.cssText = 'display:inline-block;background:#fee2e2;color:#dc2626;border-radius:20px;padding:2px 8px;font-size:11px;margin:2px;font-weight:700';
+    pill.textContent = word;
+    lh.appendChild(pill);
+  }
+}
+
+function detectHabitsInText(text, timeSec) {
+  const allHabits = getAllHabits();
+  allHabits.forEach(({word, cat}) => {
+    if (text.includes(word)) registerHabitHit(word, cat, timeSec);
+  });
+  // 独り相づち：相手への返答（「はい、わかりました」等）ではなく、
+  // 文末で独立した発話として使われた「うん」「はい」のみをカウントする
+  text.split(/[。！？]/).forEach(seg => {
+    const trimmed = seg.trim();
+    if (SOLO_AIZUCHI_WORDS.includes(trimmed)) registerHabitHit(trimmed, SOLO_AIZUCHI_CAT, timeSec);
+  });
+  const wordCount = text.replace(/[^\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\w]/g, ' ').split(/\s+/).filter(Boolean).length;
+  currentSession.words = (currentSession.words || 0) + wordCount;
+}
+
+function finishSession(text) {
+  currentSession.text = text;
+  currentSession.duration = seconds;
+  // 一回の録音の中で同じ口癖が2回以上出てきたものだけを口癖としてカウントする
+  const confirmedHabits = {};
+  Object.entries(currentSession.habitCounts).forEach(([word, data]) => {
+    if (data.count >= 2) confirmedHabits[word] = data;
+  });
+  currentSession.habitCounts = confirmedHabits;
+  currentSession.timeline = currentSession.timeline.filter(item => confirmedHabits[item.word]);
+  currentSession.totalHabits = Object.values(currentSession.habitCounts).reduce((s, v) => s + v.count, 0);
+  currentSession.rate = currentSession.words > 0 ? Math.round((currentSession.totalHabits / currentSession.words) * 100) : 0;
+  sessions.unshift(currentSession);
+
+  const todayTotal = sessions.reduce((s, ses) => s + ses.totalHabits, 0);
+  document.getElementById('totalRec').textContent = sessions.length;
+  document.getElementById('totalHabits').textContent = todayTotal;
+  const avgRate = sessions.length > 0 ? Math.round(sessions.reduce((s, ses) => s + ses.rate, 0) / sessions.length) : 0;
+  document.getElementById('habitRate').textContent = avgRate + '%';
+
+  renderHistory();
+  renderAnalysis(currentSession);
+  showToast(`録音完了！口癖 ${currentSession.totalHabits}回 検出`);
+}
+
+let historySelectMode = false;
+let selectedSessionIdx = new Set();
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  const selectBtn = document.getElementById('historySelectBtn');
+  if (sessions.length === 0) {
+    list.innerHTML = '<p style="font-size:13px;color:var(--text3)">まだ録音がありません。</p>';
+    selectBtn.style.display = 'none';
+    historySelectMode = false;
+    selectedSessionIdx.clear();
+    document.getElementById('historyBulkBar').style.display = 'none';
+    return;
+  }
+  selectBtn.style.display = 'inline-block';
+  selectBtn.textContent = historySelectMode ? 'キャンセル' : '選択して削除';
+  list.innerHTML = sessions.map((s, i) => {
+    const d = new Date(s.startTime);
+    const time = d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0');
+    const dur = Math.floor(s.duration/60) + '分' + (s.duration%60) + '秒';
+    const checked = selectedSessionIdx.has(i);
+    const icon = historySelectMode
+      ? `<div class="h-icon" style="background:${checked ? 'var(--primary)' : 'var(--primary-light)'};color:${checked ? '#fff' : 'var(--primary)'}">${checked ? '✓' : ''}</div>`
+      : `<div class="h-icon">▶</div>`;
+    const clickAction = historySelectMode ? `toggleSessionSelect(${i})` : `loadSession(${i})`;
+    const deleteBtn = historySelectMode ? '' : `<button onclick="deleteSingleSession(event, ${i})" title="削除" style="border:none;background:none;color:var(--text3);font-size:16px;cursor:pointer;padding:4px 4px 4px 8px;flex-shrink:0">🗑</button>`;
+    return `<div class="h-item" onclick="${clickAction}">
+      ${icon}
+      <div class="h-info"><div class="h-title">録音 ${sessions.length - i}</div><div class="h-meta">${time} · ${dur}</div></div>
+      <div style="display:flex;align-items:center"><div><div class="h-rate">${s.rate}%</div><div class="h-rlabel">口癖率</div></div>${deleteBtn}</div>
+    </div>`;
+  }).join('');
+  updateHistoryBulkBar();
+}
+
+function toggleHistorySelectMode() {
+  historySelectMode = !historySelectMode;
+  selectedSessionIdx.clear();
+  renderHistory();
+}
+
+function toggleSessionSelect(i) {
+  if (selectedSessionIdx.has(i)) selectedSessionIdx.delete(i); else selectedSessionIdx.add(i);
+  renderHistory();
+}
+
+function updateHistoryBulkBar() {
+  const bar = document.getElementById('historyBulkBar');
+  if (historySelectMode) {
+    bar.style.display = 'flex';
+    document.getElementById('historySelectedCount').textContent = selectedSessionIdx.size + '件選択中';
+  } else {
+    bar.style.display = 'none';
+  }
+}
+
+function deleteSingleSession(event, i) {
+  event.stopPropagation();
+  if (!confirm('この録音データを削除しますか？この操作は取り消せません。')) return;
+  sessions.splice(i, 1);
+  afterSessionsChanged('録音を削除しました');
+}
+
+function deleteSelectedSessions() {
+  if (selectedSessionIdx.size === 0) { showToast('削除する録音を選択してください'); return; }
+  if (!confirm(`選択した${selectedSessionIdx.size}件の録音データを削除しますか？この操作は取り消せません。`)) return;
+  sessions = sessions.filter((_, i) => !selectedSessionIdx.has(i));
+  historySelectMode = false;
+  selectedSessionIdx.clear();
+  afterSessionsChanged('選択した録音を削除しました');
+}
+
+function afterSessionsChanged(toastMsg) {
+  document.getElementById('totalRec').textContent = sessions.length;
+  const todayTotal = sessions.reduce((s, ses) => s + ses.totalHabits, 0);
+  document.getElementById('totalHabits').textContent = todayTotal;
+  const avgRate = sessions.length > 0 ? Math.round(sessions.reduce((s, ses) => s + ses.rate, 0) / sessions.length) : 0;
+  document.getElementById('habitRate').textContent = sessions.length > 0 ? avgRate + '%' : '—';
+  renderHistory();
+  if (sessions.length === 0) {
+    document.getElementById('noAnalysis').style.display = 'block';
+    document.getElementById('analysisContent').style.display = 'none';
+  }
+  renderGrowthPage();
+  if (toastMsg) showToast(toastMsg);
+}
+
+function loadSession(i) {
+  renderAnalysis(sessions[i]);
+  switchPage('analysis', document.querySelector('.nav-item:nth-child(2)'));
+}
+
+// ===== ANALYSIS =====
+function renderAnalysis(session) {
+  document.getElementById('noAnalysis').style.display = 'none';
+  document.getElementById('analysisContent').style.display = 'block';
+  document.getElementById('transcriptDisplay').innerHTML = highlightHabits(session.text);
+  document.getElementById('an-words').textContent = session.words || 0;
+  document.getElementById('an-count').textContent = session.totalHabits;
+  document.getElementById('an-rate').textContent = session.rate + '%';
+
+  const catCounts = {};
+  Object.values(session.habitCounts).forEach(({count, cat}) => {
+    catCounts[cat] = (catCounts[cat] || 0) + count;
+  });
+  const maxCat = Math.max(1, ...Object.values(catCounts));
+  const catGrid = document.getElementById('catGrid');
+  catGrid.innerHTML = Object.entries(catCounts).map(([cat, count]) => `
+    <div class="cat-item">
+      <div class="cat-name">${cat}</div>
+      <div class="cat-num">${count}回</div>
+      <div class="cat-track"><div class="cat-fill" style="width:${Math.round(count/maxCat*100)}%;background:${CAT_COLORS[cat]||'#888'}"></div></div>
+    </div>`).join('') || '<p style="font-size:13px;color:var(--text3)">口癖は検出されませんでした。</p>';
+
+  document.getElementById('timelineList').innerHTML = session.timeline.slice(0,20).map(t => `
+    <div class="timeline-item">
+      <div class="t-dot"></div>
+      <div class="t-text"><span class="habit-badge b-blue">${t.cat}</span> ${t.word}</div>
+      <div class="t-time">${t.time}</div>
+    </div>`).join('') || '<p style="font-size:13px;color:var(--text3)">口癖は検出されませんでした。</p>';
+
+  const sorted = Object.entries(session.habitCounts).sort((a,b) => b[1].count - a[1].count);
+  document.getElementById('rankingList').innerHTML = sorted.slice(0,10).map(([word, {count, cat}]) => `
+    <div class="ranking-item">
+      <div class="rank-left"><span class="habit-badge b-blue">${cat}</span><span class="rank-word">${word}</span></div>
+      <span class="count-pill">${count}</span>
+    </div>`).join('') || '<p style="font-size:13px;color:var(--text3)">口癖は検出されませんでした。</p>';
+
+  document.getElementById('adviceText').textContent = '分析ボタンを押すとAIがアドバイスを生成します。';
+  document.getElementById('adviceTags').innerHTML = '';
+  document.getElementById('adviceBtn').innerHTML = '✨ AIで詳しく分析する';
+  document.getElementById('adviceBtn').disabled = false;
+}
+
+function switchTab(btn, id) {
+  btn.closest('.tabs').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tl-content').style.display = id === 'tl' ? 'block' : 'none';
+  document.getElementById('rk-content').style.display = id === 'rk' ? 'block' : 'none';
+}
+
+// ===== AI ADVICE =====
+async function generateAdvice() {
+  if (!currentSession) { showToast('先に録音してください'); return; }
+  const btn = document.getElementById('adviceBtn');
+  btn.innerHTML = '<span class="loading-dots"><span></span><span></span><span></span></span>';
+  btn.disabled = true;
+  const catInfo = Object.entries(currentSession.habitCounts).map(([w,{count,cat}]) => `${w}(${cat}):${count}回`).join('、') || '口癖なし';
+  try {
+    const system = 'あなたは話し方改善コーチです。口癖分析結果から具体的で実践的なアドバイスを3〜4文で生成してください。日本語で、友達口調で若者向けに書いてください。';
+    const userText = `口癖データ：${catInfo}。総単語数:${currentSession.words}、口癖率:${currentSession.rate}%。具体的な改善アドバイスをください。`;
+    const text = await callGemini(system, userText, 400);
+    document.getElementById('adviceText').textContent = text;
+    const topCats = [...new Set(Object.values(currentSession.habitCounts).map(v => v.cat))].slice(0,3);
+    document.getElementById('adviceTags').innerHTML = topCats.map(c => `<span class="tag">${c}</span>`).join('');
+    btn.innerHTML = '✨ 再分析する';
+    btn.disabled = false;
+  } catch (e) {
+    console.error('アドバイス生成エラー:', e);
+    document.getElementById('adviceText').textContent = 'エラーが発生しました。APIキーとネットワーク接続を確認してください。';
+    btn.innerHTML = '✨ もう一度試す';
+    btn.disabled = false;
+  }
+}
+
+// ===== GROWTH =====
+function renderGrowthPage() {
+  const ctx = document.getElementById('growthChart');
+  if (!ctx) return;
+  const labels = sessions.map((s,i) => `録音${sessions.length-i}`).reverse();
+  const rates = sessions.map(s => s.rate).reverse();
+  if (chartInst) { chartInst.destroy(); chartInst = null; }
+  if (sessions.length === 0) return;
+  chartInst = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{label:'口癖率(%)',data:rates,borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.1)',fill:true,tension:0.4,pointBackgroundColor:'#2563eb',pointRadius:5}]
+    },
+    options: {
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{y:{min:0,ticks:{callback:v=>v+'%',font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}},x:{ticks:{font:{size:10}},grid:{display:false}}}
+    }
+  });
+  document.getElementById('g-rec').textContent = sessions.length;
+  const totalDur = sessions.reduce((s, ses) => s + ses.duration, 0);
+  document.getElementById('g-time').textContent = Math.round(totalDur / 60) + '分';
+  if (sessions.length >= 2) {
+    const improve = sessions[sessions.length-1].rate - sessions[0].rate;
+    document.getElementById('g-improve').textContent = (improve > 0 ? '+' : '') + improve + '%';
+  }
+  const allCounts = {};
+  sessions.forEach(s => Object.entries(s.habitCounts).forEach(([w, {count, cat}]) => {
+    if (!allCounts[w]) allCounts[w] = {count:0, cat};
+    allCounts[w].count += count;
+  }));
+  const sorted = Object.entries(allCounts).sort((a,b) => b[1].count - a[1].count).slice(0,5);
+  const gh = document.getElementById('growthHabits');
+  gh.innerHTML = '<div class="card-title">よく出る口癖</div>' + (sorted.length ? sorted.map(([w, {count, cat}]) =>
+    `<div class="ranking-item"><div class="rank-left"><span class="habit-badge b-blue">${cat}</span><span class="rank-word">${w}</span></div><span class="count-pill">${count}</span></div>`
+  ).join('') : '<p style="font-size:13px;color:var(--text3)">まだデータがありません。</p>');
+  document.getElementById('streakNum').textContent = sessions.length + '回記録';
+  const days = ['月','火','水','木','金','土','日'];
+  document.getElementById('streakDays').innerHTML = days.map((d, i) =>
+    `<div class="streak-day ${i < Math.min(sessions.length, 7) ? 'streak-active' : 'streak-inactive'}">${d}</div>`
+  ).join('');
+}
+
+// ===== TYPE DIAGNOSIS =====
+async function runDiagnosis() {
+  if (sessions.length === 0) { showToast('先に録音してください'); return; }
+  const btn = document.getElementById('diagBtn');
+  btn.innerHTML = '<span class="loading-dots"><span></span><span></span><span></span></span> 診断中...';
+  btn.disabled = true;
+  const allCounts = {};
+  sessions.forEach(s => Object.entries(s.habitCounts).forEach(([w, {count, cat}]) => {
+    if (!allCounts[cat]) allCounts[cat] = 0;
+    allCounts[cat] += count;
+  }));
+  const catSummary = Object.entries(allCounts).map(([c, n]) => `${c}:${n}回`).join('、') || '口癖なし';
+  const totalWords = sessions.reduce((s, ses) => s + (ses.words || 0), 0);
+  try {
+    const system = `あなたは話し方タイプ診断の専門家です。口癖データからE/L（感情/論理）、A/C（積極/慎重）、D/S（詳細/簡潔）、F/O（感情表現/客観）を0〜100の数値で判定し、16タイプ（EADF,EADO,EASF,EASO,ECDF,ECDO,ECSF,ECSO,LADF,LADO,LASF,LASO,LCDF,LCDO,LCSF,LCSO）のうち1つを決定してください。必ずJSON形式のみで返答してください（Markdownなし）:{"type":"XXXX","name":"タイプ名","description":"一言説明","el":65,"ac":40,"ds":55,"fo":30,"strengths":["強み1","強み2","強み3"],"improvements":["改善1","改善2"]}`;
+    const userText = `口癖データ：${catSummary}。総単語数:${totalWords}、録音回数:${sessions.length}回。`;
+    let text = await callGemini(system, userText, 500);
+    text = text.replace(/```json|```/g, '').trim();
+    const result = JSON.parse(text);
+    document.getElementById('typeCode').textContent = result.type || '——';
+    document.getElementById('typeName').textContent = result.name || '不明';
+    document.getElementById('typeSub').textContent = result.description || '';
+    document.getElementById('ax-el').style.width = (result.el || 50) + '%';
+    document.getElementById('ax-ac').style.width = (result.ac || 50) + '%';
+    document.getElementById('ax-ds').style.width = (result.ds || 50) + '%';
+    document.getElementById('ax-fo').style.width = (result.fo || 50) + '%';
+    if (result.strengths?.length) {
+      document.getElementById('typeStrengths').style.display = 'block';
+      document.getElementById('strengthList').innerHTML = result.strengths.map(s =>
+        `<div class="str-item"><div class="str-ic str-ok">✓</div><span>${s}</span></div>`).join('');
+    }
+    if (result.improvements?.length) {
+      document.getElementById('typeImprovements').style.display = 'block';
+      document.getElementById('improvementList').innerHTML = result.improvements.map(s =>
+        `<div class="str-item"><div class="str-ic str-ng">↑</div><span>${s}</span></div>`).join('');
+    }
+    showToast(`診断完了！あなたは ${result.name} です`);
+  } catch (e) {
+    console.error('診断エラー:', e);
+    showToast('診断に失敗しました。もう一度お試しください。');
+  }
+  btn.innerHTML = '🔮 話し方タイプを診断する';
+  btn.disabled = false;
+}
+
+// ===== UTILS =====
+function getAllHabits() {
+  return Object.entries(habitRegistry).map(([word, cat]) => ({word, cat}));
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+function showModal() {
+  document.getElementById('habitModal').classList.add('show');
+  renderHabitList();
+}
+function closeModal() { document.getElementById('habitModal').classList.remove('show'); }
+function addHabit() {
+  const word = document.getElementById('habitInput').value.trim();
+  if (!word) { showToast('口癖を入力してください'); return; }
+  const cat = document.getElementById('habitCat').value;
+  habitRegistry[word] = cat;
+  showToast(`「${word}」を追加しました！`);
+  document.getElementById('habitInput').value = '';
+  renderHabitList();
+}
+function deleteHabitWord(word) {
+  if (!confirm(`「${word}」を口癖一覧から削除しますか？`)) return;
+  delete habitRegistry[word];
+  showToast(`「${word}」を削除しました`);
+  renderHabitList();
+}
+function resetHabitsToDefault() {
+  if (!confirm('登録されている口癖を初期状態にリセットしますか？\n追加・編集した内容はすべて失われます。')) return;
+  habitRegistry = buildDefaultHabitRegistry();
+  showToast('口癖を初期状態にリセットしました');
+  renderHabitList();
+}
+function renderHabitList() {
+  const container = document.getElementById('habitListContainer');
+  const countEl = document.getElementById('habitCountNum');
+  if (!container || !countEl) return;
+  const allEntries = Object.entries(habitRegistry);
+  countEl.textContent = allEntries.length;
+  const search = (document.getElementById('habitSearchInput')?.value || '').trim();
+  let entries = search ? allEntries.filter(([w]) => w.includes(search)) : allEntries;
+  entries = entries.slice().sort((a, b) => a[1].localeCompare(b[1], 'ja') || a[0].localeCompare(b[0], 'ja'));
+  if (entries.length === 0) {
+    container.innerHTML = '<p style="font-size:13px;color:var(--text3);padding:10px 0">該当する口癖がありません。</p>';
+    return;
+  }
+  container.innerHTML = entries.map(([word, cat]) => {
+    const color = CAT_COLORS[cat] || '#888';
+    const safeWord = word.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    return `<div class="h-item" style="cursor:default">
+      <span class="habit-badge" style="background:${color}22;color:${color};flex-shrink:0">${cat}</span>
+      <div class="h-info"><div class="h-title">${word}</div></div>
+      <button onclick="deleteHabitWord('${safeWord}')" title="削除" style="border:none;background:#fee2e2;color:#dc2626;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:12px;flex-shrink:0">✕</button>
+    </div>`;
+  }).join('');
+}
+</script>
+</body>
+</html>
