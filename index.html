@@ -108,9 +108,10 @@ mark.habit{border-radius:3px;padding:0 2px}
 .loading-dots span:nth-child(3){animation-delay:.4s}
 @keyframes dot{0%,80%,100%{opacity:.2}40%{opacity:1}}
 .prog-wrap{margin-bottom:10px}
-.prog-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
-.prog-bar{height:7px;background:var(--primary-light);border-radius:4px;overflow:hidden}
+.prog-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;color:var(--text2)}
+.prog-bar{height:7px;background:var(--border);border-radius:4px;overflow:hidden}
 .prog-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#2563eb,#60a5fa);transition:width .8s}
+.prog-fill.success{background:linear-gradient(90deg,#10b981,#34d399)}
 .streak-day{flex:1;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
 .streak-active{background:var(--primary);color:#fff}
 .streak-inactive{background:var(--primary-light);color:var(--text3)}
@@ -138,23 +139,12 @@ mark.habit{border-radius:3px;padding:0 2px}
 .modal-title{font-size:16px;font-weight:700;margin-bottom:14px}
 .modal-header-sticky{position:sticky;top:-20px;margin:-20px -20px 14px;padding:16px 20px 10px;background:var(--card);z-index:30;display:flex;align-items:center;justify-content:space-between;gap:10px;border-radius:var(--radius) var(--radius) 0 0}
 .modal-close-btn{width:30px;height:30px;border-radius:50%;border:none;background:#f1f5f9;color:#475569;font-size:16px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.15);flex-shrink:0}
-.modal-close-btn:active{background:#e2e8f0}
 .m-input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:9px 13px;font-size:14px;font-family:'Noto Sans JP',sans-serif;outline:none;margin-bottom:8px;transition:border .2s}
 .m-input:focus{border-color:var(--primary)}
 .m-select{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:9px 13px;font-size:14px;font-family:'Noto Sans JP',sans-serif;outline:none;margin-bottom:12px;background:#fff}
 .permission-banner{background:#fff3cd;border:1px solid #ffc107;border-radius:12px;padding:12px;margin-bottom:12px;font-size:13px;display:none}
 .permission-banner.show{display:block}
 .chart-wrap{position:relative;height:150px;margin-bottom:6px}
-
-/* ===== ANTHROPIC API KEY SETUP ===== */
-.api-setup{background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:14px;margin-bottom:12px}
-.api-setup-title{font-size:13px;font-weight:700;color:#15803d;margin-bottom:6px}
-.api-setup p{font-size:12px;color:#166534;line-height:1.6;margin-bottom:8px}
-.api-input-row{display:flex;gap:6px}
-.api-input{flex:1;border:1.5px solid #86efac;border-radius:8px;padding:7px 10px;font-size:12px;font-family:monospace;outline:none}
-.api-input:focus{border-color:#16a34a}
-.api-save-btn{background:#16a34a;color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer}
-.api-status{font-size:11px;margin-top:6px}
 
 /* ===== TOPIC SUGGESTION ===== */
 .topic-card{background:linear-gradient(135deg,#fff7ed,#ffedd5);border:1px solid #fed7aa;border-radius:var(--radius);padding:14px;margin-bottom:12px}
@@ -165,10 +155,7 @@ mark.habit{border-radius:3px;padding:0 2px}
 .topic-text{font-size:15px;font-weight:500;color:#7c2d12;line-height:1.7;margin-bottom:12px;min-height:44px}
 .topic-actions{display:flex;gap:8px}
 .topic-btn{flex:1;background:#fff;border:1px solid #fed7aa;color:#c2410c;border-radius:8px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans JP',sans-serif;display:flex;align-items:center;justify-content:center;gap:4px;transition:all .2s}
-.topic-btn:hover{background:#ffedd5}
-.topic-btn:disabled{opacity:.6;cursor:not-allowed}
 .topic-btn.ai{background:var(--primary);border-color:var(--primary);color:#fff}
-.topic-btn.ai:hover{background:var(--primary-dark)}
 </style>
 </head>
 <body>
@@ -181,14 +168,12 @@ mark.habit{border-radius:3px;padding:0 2px}
     </div>
     <div class="header-right">
       <button class="header-btn" onclick="showModal()">＋</button>
-      <button class="header-btn" onclick="showToast('設定は近日公開！')">⚙</button>
+      <button class="header-btn" onclick="showSettingsModal()">⚙</button>
     </div>
   </div>
 
   <!-- PAGE: RECORD -->
   <div id="page-record" class="page active">
-
-  
 
     <div id="permBanner" class="permission-banner">
       ⚠️ マイクへのアクセス許可が必要です。ブラウザのアドレスバーから許可してください。
@@ -245,7 +230,7 @@ mark.habit{border-radius:3px;padding:0 2px}
     <div class="card" id="historyCard">
       <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
         <span>録音履歴</span>
-        <button id="historySelectBtn" style="display:none;border:none;background:none;color:var(--primary);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:normal;text-transform:none" onclick="toggleHistorySelectMode()">選択して削除</button>
+        <button id="historySelectBtn" style="display:none;border:none;background:none;color:var(--primary);font-size:11px;font-weight:700;cursor:pointer" onclick="toggleHistorySelectMode()">選択して削除</button>
       </div>
       <div id="historyList"><p style="font-size:13px;color:var(--text3)">まだ録音がありません。</p></div>
       <div id="historyBulkBar" style="display:none;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
@@ -301,6 +286,25 @@ mark.habit{border-radius:3px;padding:0 2px}
 
   <!-- PAGE: GROWTH -->
   <div id="page-growth" class="page">
+    <!-- 今週の目標カード -->
+    <div class="card" id="weeklyGoalCard">
+      <div class="card-title">今週の目標達成度</div>
+      <div class="prog-wrap">
+        <div class="prog-label">
+          <span id="goalCountLabel">録音回数（目標: 3回）</span>
+          <span id="goalCountText" style="font-weight:700">0 / 3回</span>
+        </div>
+        <div class="prog-bar"><div class="prog-fill" id="goalCountBar" style="width:0%"></div></div>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-label">
+          <span id="goalRateLabel">平均口癖率（目標: 10%以下）</span>
+          <span id="goalRateText" style="font-weight:700">—</span>
+        </div>
+        <div class="prog-bar"><div class="prog-fill" id="goalRateBar" style="width:0%"></div></div>
+      </div>
+    </div>
+
     <div class="card">
       <div class="card-title">口癖率の推移</div>
       <div class="chart-wrap">
@@ -308,21 +312,13 @@ mark.habit{border-radius:3px;padding:0 2px}
       </div>
     </div>
     <div class="stats-row">
-      <div class="stat-card"><div class="stat-num" id="g-rec">0</div><div class="stat-label">録音回数</div></div>
+      <div class="stat-card"><div class="stat-num" id="g-rec">0</div><div class="stat-label">総録音回数</div></div>
       <div class="stat-card"><div class="stat-num" id="g-improve" style="color:var(--success)">—</div><div class="stat-label">改善率</div></div>
       <div class="stat-card"><div class="stat-num" id="g-time">0分</div><div class="stat-label">総時間</div></div>
     </div>
     <div class="card" id="growthHabits">
       <div class="card-title">よく出る口癖</div>
       <p style="font-size:13px;color:var(--text3)">録音が増えると表示されます。</p>
-    </div>
-    <div class="card">
-      <div class="card-title">継続ストリーク</div>
-      <div style="display:flex;align-items:center;gap:12px;padding:6px 0">
-        <div style="font-size:32px">🔥</div>
-        <div><div style="font-size:22px;font-weight:700;font-family:'DM Sans',sans-serif;color:var(--primary)" id="streakNum">0回記録</div><div style="font-size:12px;color:var(--text2)">毎日練習を続けよう！</div></div>
-      </div>
-      <div style="display:flex;gap:5px;margin-top:8px" id="streakDays"></div>
     </div>
   </div>
 
@@ -334,10 +330,10 @@ mark.habit{border-radius:3px;padding:0 2px}
       <div class="type-sub" id="typeSub">録音後に診断が可能になります</div>
     </div>
     <div class="axis-grid">
-      <div class="axis-card"><div class="axis-label">感情 / 論理</div><div class="axis-row"><span class="axis-l">E</span><div class="axis-track"><div class="axis-fill" id="ax-el" style="width:50%"></div></div><span style="font-size:10px;color:var(--text3)">L</span></div></div>
-      <div class="axis-card"><div class="axis-label">積極 / 慎重</div><div class="axis-row"><span class="axis-l">A</span><div class="axis-track"><div class="axis-fill" id="ax-ac" style="width:50%"></div></div><span style="font-size:10px;color:var(--text3)">C</span></div></div>
-      <div class="axis-card"><div class="axis-label">詳細 / 簡潔</div><div class="axis-row"><span class="axis-l">D</span><div class="axis-track"><div class="axis-fill" id="ax-ds" style="width:50%"></div></div><span style="font-size:10px;color:var(--text3)">S</span></div></div>
-      <div class="axis-card"><div class="axis-label">感情表現 / 客観</div><div class="axis-row"><span class="axis-l">F</span><div class="axis-track"><div class="axis-fill" id="ax-fo" style="width:50%"></div></div><span style="font-size:10px;color:var(--text3)">O</span></div></div>
+      <div class="axis-card"><div class="axis-label">言い切り方</div><div class="axis-row"><span class="axis-l">D</span><div class="axis-track"><div class="axis-fill" id="ax-dh" style="width:50%"></div></div><span style="font-size:10px;color:var(--text3)">H</span></div></div>
+      <div class="axis-card"><div class="axis-label">話の組み立て</div><div class="axis-row"><span class="axis-l">S</span><div class="axis-track"><div class="axis-fill" id="ax-st" style="width:50%"></div></div><span style="font-size:10px;color:var(--text3)">T</span></div></div>
+      <div class="axis-card"><div class="axis-label">説明の仕方</div><div class="axis-row"><span class="axis-l">C</span><div class="axis-track"><div class="axis-fill" id="ax-cg" style="width:50%"></div></div><span style="font-size:10px;color:var(--text3)">G</span></div></div>
+      <div class="axis-card"><div class="axis-label">言葉の温度</div><div class="axis-row"><span class="axis-l">E</span><div class="axis-track"><div class="axis-fill" id="ax-ef" style="width:50%"></div></div><span style="font-size:10px;color:var(--text3)">F</span></div></div>
     </div>
     <div class="card" id="typeStrengths" style="display:none">
       <div class="card-title">あなたの強み</div>
@@ -363,12 +359,12 @@ mark.habit{border-radius:3px;padding:0 2px}
   </nav>
 </div>
 
-<!-- MODAL -->
+<!-- MODAL: HABIT DICTIONARY -->
 <div class="modal-ov" id="habitModal">
   <div class="modal" style="max-height:82vh;overflow-y:auto;position:relative">
     <div class="modal-header-sticky">
       <div class="modal-title" style="margin-bottom:0">口癖を管理する</div>
-      <button class="modal-close-btn" onclick="closeModal()" aria-label="閉じる">✕</button>
+      <button class="modal-close-btn" onclick="closeModal()">✕</button>
     </div>
     <input class="m-input" id="habitInput" placeholder="例：ぶっちゃけ、要は" maxlength="20">
     <select class="m-select" id="habitCat">
@@ -384,119 +380,131 @@ mark.habit{border-radius:3px;padding:0 2px}
     <div style="border-top:1px solid var(--border);padding-top:14px">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
         <div class="card-title" style="margin-bottom:0">登録されている口癖一覧（<span id="habitCountNum">0</span>件）</div>
-        <button onclick="resetHabitsToDefault()" style="border:none;background:none;color:#dc2626;font-size:12px;cursor:pointer;text-decoration:underline;white-space:nowrap;padding:2px 0">初期状態にリセット</button>
+        <button onclick="resetHabitsToDefault()" style="border:none;background:none;color:#dc2626;font-size:12px;cursor:pointer;text-decoration:underline">初期化</button>
       </div>
       <input class="m-input" id="habitSearchInput" placeholder="🔍 口癖を検索" oninput="renderHabitList()">
       <div id="habitListContainer"></div>
     </div>
   </div>
 </div>
+
+<!-- MODAL: SETTINGS -->
+<div class="modal-ov" id="settingsModal">
+  <div class="modal" style="max-height:82vh;overflow-y:auto">
+    <div class="modal-header-sticky">
+      <div class="modal-title" style="margin-bottom:0">アプリ設定</div>
+      <button class="modal-close-btn" onclick="closeSettingsModal()">✕</button>
+    </div>
+    
+    <h3 style="font-size:13px;margin-bottom:8px;color:var(--primary)">🎯 週間目標</h3>
+    <label style="font-size:12px;color:var(--text2)">週の録音回数</label>
+    <select class="m-select" id="setGoalCount">
+      <option value="1">1回</option>
+      <option value="3">3回</option>
+      <option value="5">5回</option>
+      <option value="7">7回</option>
+    </select>
+    
+    <label style="font-size:12px;color:var(--text2)">目標の口癖率（%以下）</label>
+    <select class="m-select" id="setGoalRate">
+      <option value="5">5%以下</option>
+      <option value="10">10%以下</option>
+      <option value="15">15%以下</option>
+      <option value="20">20%以下</option>
+    </select>
+    
+    <h3 style="font-size:13px;margin-bottom:8px;margin-top:16px;color:var(--primary)">⚖️ 判定の厳しさ</h3>
+    <label style="font-size:12px;color:var(--text2)">口癖としてカウントする基準</label>
+    <select class="m-select" id="setThreshold">
+      <option value="1">1回でも出たら（厳しい）</option>
+      <option value="2">2回以上出たら（標準）</option>
+      <option value="3">3回以上出たら（甘め）</option>
+    </select>
+
+    <h3 style="font-size:13px;margin-bottom:8px;margin-top:16px;color:var(--primary)">⏰ 練習リマインダー</h3>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <input type="checkbox" id="setReminderOn" onchange="requestNotificationPermission()">
+      <label for="setReminderOn" style="font-size:13px">ブラウザ通知をオンにする</label>
+    </div>
+    <input type="time" class="m-input" id="setReminderTime" value="20:00">
+    <p style="font-size:11px;color:var(--text3);margin-bottom:16px;line-height:1.5">※通知を受け取るには、このアプリのタブを開いたままにしておく必要があります。</p>
+    
+    <button class="btn btn-primary btn-full" onclick="saveSettings()">設定を保存する</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script>
+// ===== APP SETTINGS & LOCAL STORAGE =====
+let appSettings = {
+  goalCount: 3,
+  goalRate: 10,
+  habitThreshold: 2,
+  reminderOn: false,
+  reminderTime: '20:00'
+};
+
+function loadData() {
+  // 設定の読み込み
+  const savedSettings = localStorage.getItem('km_settings');
+  if (savedSettings) appSettings = { ...appSettings, ...JSON.parse(savedSettings) };
+  
+  // 録音履歴の読み込み
+  const savedSessions = localStorage.getItem('km_sessions');
+  if (savedSessions) sessions = JSON.parse(savedSessions);
+  
+  // 口癖辞書の読み込み
+  const savedHabits = localStorage.getItem('km_habits');
+  if (savedHabits) {
+    habitRegistry = JSON.parse(savedHabits);
+  } else {
+    habitRegistry = buildDefaultHabitRegistry();
+  }
+}
+
+function saveData() {
+  localStorage.setItem('km_settings', JSON.stringify(appSettings));
+  localStorage.setItem('km_sessions', JSON.stringify(sessions));
+  localStorage.setItem('km_habits', JSON.stringify(habitRegistry));
+}
+
 // ===== HABIT DICTIONARY =====
 const HABITS = {
-  '相づち系': [
-    'えっと','あの','その','なんか','うーん','そうですね','なるほど','たしかに','そうそう'
-  ],
-
-  '話しつなぎ系': [
-    'とりあえず','一応','ちなみに','ていうか','というか','だから','なので','それで',
-    'でね','まあ','ということで','うん','それから','こんな感じで','そんな感じで','えー','はい','じゃあ'
-  ],
-
-  '曖昧表現系': [
-    'みたいな','たぶん','おそらく','なんとなく','若干','ちょっと','だいたい','結構','知らんけど'
-  ],
-
-  '強調系': [
-    'めっちゃ','すごく','超','マジで','ガチで','本当に','かなり','圧倒的に','ものすごく','なんだ','やっぱ','やはり'
-  ],
-
-  '否定・言い訳系': [
-    'でも','いや','とはいえ','ただ','別に','しょうがない','仕方ない','どうせ'
-  ],
-
-  '自信がない系': [
-    'たぶんですけど','かもしれない','なんとも言えない','そんな感じ','微妙','どうなんだろう','と思います'
-  ],
-
-  '若者言葉系': [
-    'えぐい','やばい','それな','しんどい','ワンチャン','あざす','ゆうて','じゃね','待って','しぬ','むり','おもろ','そうなん？','しゃあない'
-  ],
-
-  'ビジネス系': [
-    '要するに','端的に言うと','結論から言うと','つまり','現状','基本的に','逆に','であります','のほうを','の方を'
-  ],
-
-  '無意識系': [
-    'なるほどですね','ですよね','そうなんですよ','なんですよね','って感じ','みたいな感じ',
-    'じゃないですか','と思うんですけど','以上です','ですね','さあ','えっ','ね。'],
+  '相づち系': ['えっと','あの','その','なんか','うーん','そうですね','なるほど','たしかに','そうそう'],
+  '話しつなぎ系': ['とりあえず','一応','ちなみに','ていうか','というか','だから','なので','それで','でね','まあ','ということで','うん','それから','こんな感じで','そんな感じで','えー','はい','じゃあ'],
+  '曖昧表現系': ['みたいな','たぶん','おそらく','なんとなく','若干','ちょっと','だいたい','結構','知らんけど'],
+  '強調系': ['めっちゃ','すごく','超','マジで','ガチで','本当に','かなり','圧倒的に','ものすごく','なんだ','やっぱ','やはり'],
+  '否定・言い訳系': ['でも','いや','とはいえ','ただ','別に','しょうがない','仕方ない','どうせ'],
+  '自信がない系': ['たぶんですけど','かもしれない','なんとも言えない','そんな感じ','微妙','どうなんだろう','と思います'],
+  '若者言葉系': ['えぐい','やばい','それな','しんどい','ワンチャン','あざす','ゆうて','じゃね','待って','しぬ','むり','おもろ','そうなん？','しゃあない'],
+  'ビジネス系': ['要するに','端的に言うと','結論から言うと','つまり','現状','基本的に','逆に','であります','のほうを','の方を'],
+  '無意識系': ['なるほどですね','ですよね','そうなんですよ','なんですよね','って感じ','みたいな感じ','じゃないですか','と思うんですけど','以上です','ですね','さあ','えっ','ね。']
 };
 const CAT_COLORS = {'相づち系':'#2563eb','話しつなぎ系':'#059669','曖昧表現系':'#7c3aed','強調系':'#dc2626','否定・言い訳系':'#db2777','自信がない系':'#d97706','若者言葉系':'#16a34a','ビジネス系':'#64748b','無意識系':'#9333ea','独り相づち':'#0891b2','その他':'#475569'};
-// 独り相づち：会話中の返答/応答としてではなく、文末で独立した発話として使われた
-// 「うん」「はい」だけを特別に検出して、このカテゴリでカウントする
 const SOLO_AIZUCHI_WORDS = ['うん', 'はい'];
 const SOLO_AIZUCHI_CAT = '独り相づち';
-// テキストを文の区切り（。！？）で分割し、区切られた1文がちょうどその単語のみ
-// （前後に読点や他の言葉を伴わない＝独立した発話）である回数を数える
+
 function countSoloAizuchi(text, word) {
   return text.split(/[。！？]/).filter(seg => seg.trim() === word).length;
 }
-// habitRegistry: word -> category。デフォルト辞書とユーザー追加分をまとめて保持し、
-// 一覧表示・追加・削除をすべてこのレジストリに対して行う
+
 function buildDefaultHabitRegistry() {
   const reg = {};
   Object.entries(HABITS).forEach(([cat, words]) => words.forEach(word => { reg[word] = cat; }));
   return reg;
 }
-let habitRegistry = buildDefaultHabitRegistry();
+let habitRegistry = {};
 
 // ===== TOPIC SUGGESTIONS =====
 const TOPICS = {
-  '自己紹介': [
-    '最近ハマっていることを教えてください',
-    '自分の性格を一言で表すとしたら？',
-    '小さい頃の将来の夢は何でしたか？',
-    '自分の強みだと思うところを教えてください',
-    '休日はどんな風に過ごすことが多いですか？'
-  ],
-  '日常': [
-    '今日一日を振り返って、一番印象に残った出来事は？',
-    '最近感動したことは何ですか？',
-    '最近行った場所でおすすめのスポットはありますか？',
-    '朝のルーティンを教えてください',
-    '最近読んだ本や見た映画で面白かったものは？'
-  ],
-  '仕事・キャリア': [
-    '今の仕事でやりがいを感じる瞬間は？',
-    '理想の働き方について教えてください',
-    '仕事で最近学んだことは何ですか？',
-    '5年後、どんな仕事をしていたいですか？',
-    'チームで仕事をする上で大切にしていることは？'
-  ],
-  '趣味・好きなこと': [
-    '一番好きな趣味について、魅力を説明してください',
-    '休みの日にやりたいことランキングを教えてください',
-    '最近始めたことや挑戦していることは？',
-    '好きな音楽や好きなアーティストについて教えてください',
-    '旅行するならどこに行きたいですか？その理由も教えてください'
-  ],
-  '意見・ディスカッション': [
-    'AIが普及した未来の社会について、どう思いますか？',
-    '理想のリーダー像とはどんなものだと思いますか？',
-    '仕事とプライベートのバランスをどう取るべきだと思いますか？',
-    '今の教育制度について改善すべき点はありますか？',
-    'SNSとの付き合い方について、あなたの考えを教えてください'
-  ],
-  '未来・目標': [
-    '1年後、どんな自分になっていたいですか？',
-    '今年チャレンジしたいことを教えてください',
-    '達成したい目標とその理由を教えてください',
-    '10年後の理想の生活について話してください',
-    '今、一番頑張っていることは何ですか？'
-  ],
+  '自己紹介': ['最近ハマっていることを教えてください','自分の性格を一言で表すとしたら？','小さい頃の将来の夢は何でしたか？','自分の強みだと思うところを教えてください','休日はどんな風に過ごすことが多いですか？'],
+  '日常': ['今日一日を振り返って、一番印象に残った出来事は？','最近感動したことは何ですか？','最近行った場所でおすすめのスポットはありますか？','朝のルーティンを教えてください','最近読んだ本や見た映画で面白かったものは？'],
+  '仕事・キャリア': ['今の仕事でやりがいを感じる瞬間は？','理想の働き方について教えてください','仕事で最近学んだことは何ですか？','5年後、どんな仕事をしていたいですか？','チームで仕事をする上で大切にしていることは？'],
+  '趣味・好きなこと': ['一番好きな趣味について、魅力を説明してください','休みの日にやりたいことランキングを教えてください','最近始めたことや挑戦していることは？','好きな音楽や好きなアーティストについて教えてください','旅行するならどこに行きたいですか？その理由も教えてください'],
+  '意見・ディスカッション': ['AIが普及した未来の社会について、どう思いますか？','理想のリーダー像とはどんなものだと思いますか？','仕事とプライベートのバランスをどう取るべきだと思いますか？','今の教育制度について改善すべき点はありますか？','SNSとの付き合い方について、あなたの考えを教えてください'],
+  '未来・目標': ['1年後、どんな自分になっていたいですか？','今年チャレンジしたいことを教えてください','達成したい目標とその理由を教えてください','10年後の理想の生活について話してください','今、一番頑張っていることは何ですか？']
 };
 let lastTopicText = '';
 
@@ -540,19 +548,16 @@ async function generateAiTopic() {
     const habitSummary = Object.entries(allCounts).map(([c, n]) => `${c}:${n}回`).join('、') || 'まだデータなし';
     const sel = document.getElementById('topicCatSelect').value;
     const catHint = (sel && sel !== 'random') ? `カテゴリーは「${sel}」にしてください。` : '';
-    const system = `あなたは話し方練習アプリのお題提案AIです。ユーザーが1〜2分間、自由に話す練習ができる日本語の質問・トピックを1つだけ考えてください。必ずJSON形式のみで返答してください（Markdownや前置き無し）：{"category":"カテゴリ名（自己紹介/日常/仕事・キャリア/趣味・好きなこと/意見・ディスカッション/未来・目標のいずれか）","question":"質問文"}`;
-    const userText = `これまでの口癖の傾向：${habitSummary}。${catHint}話しやすく、自然に話が広がる質問を1つ提案してください。`;
+    const system = `あなたは話し方練習アプリのお題提案AIです。ユーザーが自由に話す練習ができる日本語の質問を1つだけJSON形式のみで返答してください：{"category":"カテゴリ名","question":"質問文"}`;
+    const userText = `これまでの口癖の傾向：${habitSummary}。${catHint}話しやすく自然に広がる質問を1つ提案してください。`;
     let text = await callGemini(system, userText, 200);
     text = text.replace(/```json|```/g, '').trim();
     const result = JSON.parse(text);
     if (result.question) {
       renderTopic({ cat: result.category || 'AIおすすめ', text: result.question });
       showToast('AIがお題を考えました✨');
-    } else {
-      throw new Error('empty');
     }
   } catch (e) {
-    console.error('お題生成エラー:', e);
     showToast('お題の生成に失敗しました。ローカルのお題を表示します');
     nextTopic();
   }
@@ -560,30 +565,25 @@ async function generateAiTopic() {
   btn.disabled = false;
 }
 
-
-window.addEventListener('load', () => { nextTopic(); });
+window.addEventListener('load', () => {
+  loadData();
+  nextTopic();
+  afterSessionsChanged(); // ロード時に履歴やグラフを描画
+});
 
 // ===== Gemini API helper =====
 async function callGemini(system, userText, maxTokens) {
-  // 自身(Vercel)のサーバーレス関数にリクエストを送る
   const res = await fetch(`/api/gemini`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ system, userText, maxTokens })
   });
-  
-  if (!res.ok) {
-    const errBody = await res.text();
-    throw new Error(`API error ${res.status}: ${errBody}`);
-  }
+  if (!res.ok) throw new Error(`API error`);
   const data = await res.json();
   const text = data?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
-  if (!text) {
-    throw new Error(`empty response`);
-  }
+  if (!text) throw new Error(`empty response`);
   return text;
 }
-    
 
 // ===== STATE =====
 let recording = false;
@@ -699,18 +699,10 @@ function setupSpeechRecognition() {
     interimTranscript = interim;
     renderLiveTranscript(fullTranscript, interim);
   };
-
   recognition.onerror = (e) => {
-    if (e.error === 'not-allowed') {
-      document.getElementById('permBanner').classList.add('show');
-      stopRecording();
-    }
+    if (e.error === 'not-allowed') { document.getElementById('permBanner').classList.add('show'); stopRecording(); }
   };
-
-  recognition.onend = () => {
-    if (recording) { try { recognition.start(); } catch(e){} }
-  };
-
+  recognition.onend = () => { if (recording) { try { recognition.start(); } catch(e){} } };
   recognition.start();
 }
 
@@ -727,16 +719,14 @@ function highlightHabits(text) {
   const allHabits = getAllHabits();
   allHabits.sort((a, b) => b.word.length - a.word.length);
   allHabits.forEach(({word, cat}) => {
-    // 同じ口癖が一回の録音内で2回以上出てきた場合のみ口癖としてハイライトする
     const occurrences = text.split(word).length - 1;
-    if (occurrences < 2) return;
+    // ユーザーが設定した閾値以上の出現でハイライト
+    if (occurrences < appSettings.habitThreshold) return;
     const color = cat === '相づち系' ? 'mark-blue' : cat === '曖昧表現系' ? 'mark-purple' : cat === '強調系' ? 'mark-red' : cat === '否定・言い訳系' ? 'mark-pink' : 'mark-orange';
     result = result.split(word).join(`<mark class="habit ${color}">${word}</mark>`);
   });
-  // 独り相づち：文末で独立した発話として使われた「うん」「はい」のみをハイライトする
-  // （「はい、わかりました」のような返答としての使用はハイライトしない）
   SOLO_AIZUCHI_WORDS.forEach(word => {
-    if (countSoloAizuchi(text, word) < 2) return;
+    if (countSoloAizuchi(text, word) < appSettings.habitThreshold) return;
     result = result.split(/([。！？])/).map(seg => seg.trim() === word ? `<mark class="habit mark-cyan">${word}</mark>` : seg).join('');
   });
   return result;
@@ -748,8 +738,8 @@ function registerHabitHit(word, cat, timeSec) {
   const m = String(Math.floor(timeSec / 60)).padStart(2, '0');
   const s = String(timeSec % 60).padStart(2, '0');
   currentSession.timeline.push({word, cat, time: m + ':' + s});
-  // 一回の録音の中で2回以上出てきたタイミングで口癖として通知する
-  if (currentSession.habitCounts[word].count >= 2) {
+  // 設定した閾値に達したタイミングでリアルタイム通知
+  if (currentSession.habitCounts[word].count === Number(appSettings.habitThreshold)) {
     const lh = document.getElementById('liveHabits');
     const pill = document.createElement('span');
     pill.style.cssText = 'display:inline-block;background:#fee2e2;color:#dc2626;border-radius:20px;padding:2px 8px;font-size:11px;margin:2px;font-weight:700';
@@ -763,8 +753,6 @@ function detectHabitsInText(text, timeSec) {
   allHabits.forEach(({word, cat}) => {
     if (text.includes(word)) registerHabitHit(word, cat, timeSec);
   });
-  // 独り相づち：相手への返答（「はい、わかりました」等）ではなく、
-  // 文末で独立した発話として使われた「うん」「はい」のみをカウントする
   text.split(/[。！？]/).forEach(seg => {
     const trimmed = seg.trim();
     if (SOLO_AIZUCHI_WORDS.includes(trimmed)) registerHabitHit(trimmed, SOLO_AIZUCHI_CAT, timeSec);
@@ -776,26 +764,19 @@ function detectHabitsInText(text, timeSec) {
 function finishSession(text) {
   currentSession.text = text;
   currentSession.duration = seconds;
-  // 一回の録音の中で同じ口癖が2回以上出てきたものだけを口癖としてカウントする
   const confirmedHabits = {};
   Object.entries(currentSession.habitCounts).forEach(([word, data]) => {
-    if (data.count >= 2) confirmedHabits[word] = data;
+    // ユーザー設定の閾値をクリアしたものだけを保存
+    if (data.count >= appSettings.habitThreshold) confirmedHabits[word] = data;
   });
   currentSession.habitCounts = confirmedHabits;
   currentSession.timeline = currentSession.timeline.filter(item => confirmedHabits[item.word]);
   currentSession.totalHabits = Object.values(currentSession.habitCounts).reduce((s, v) => s + v.count, 0);
   currentSession.rate = currentSession.words > 0 ? Math.round((currentSession.totalHabits / currentSession.words) * 100) : 0;
+  
   sessions.unshift(currentSession);
-
-  const todayTotal = sessions.reduce((s, ses) => s + ses.totalHabits, 0);
-  document.getElementById('totalRec').textContent = sessions.length;
-  document.getElementById('totalHabits').textContent = todayTotal;
-  const avgRate = sessions.length > 0 ? Math.round(sessions.reduce((s, ses) => s + ses.rate, 0) / sessions.length) : 0;
-  document.getElementById('habitRate').textContent = avgRate + '%';
-
-  renderHistory();
+  afterSessionsChanged(`録音完了！口癖 ${currentSession.totalHabits}回 検出`);
   renderAnalysis(currentSession);
-  showToast(`録音完了！口癖 ${currentSession.totalHabits}回 検出`);
 }
 
 let historySelectMode = false;
@@ -838,32 +819,28 @@ function toggleHistorySelectMode() {
   selectedSessionIdx.clear();
   renderHistory();
 }
-
 function toggleSessionSelect(i) {
   if (selectedSessionIdx.has(i)) selectedSessionIdx.delete(i); else selectedSessionIdx.add(i);
   renderHistory();
 }
-
 function updateHistoryBulkBar() {
   const bar = document.getElementById('historyBulkBar');
   if (historySelectMode) {
     bar.style.display = 'flex';
     document.getElementById('historySelectedCount').textContent = selectedSessionIdx.size + '件選択中';
-  } else {
-    bar.style.display = 'none';
-  }
+  } else bar.style.display = 'none';
 }
 
 function deleteSingleSession(event, i) {
   event.stopPropagation();
-  if (!confirm('この録音データを削除しますか？この操作は取り消せません。')) return;
+  if (!confirm('この録音データを削除しますか？')) return;
   sessions.splice(i, 1);
   afterSessionsChanged('録音を削除しました');
 }
 
 function deleteSelectedSessions() {
   if (selectedSessionIdx.size === 0) { showToast('削除する録音を選択してください'); return; }
-  if (!confirm(`選択した${selectedSessionIdx.size}件の録音データを削除しますか？この操作は取り消せません。`)) return;
+  if (!confirm(`選択した${selectedSessionIdx.size}件の録音データを削除しますか？`)) return;
   sessions = sessions.filter((_, i) => !selectedSessionIdx.has(i));
   historySelectMode = false;
   selectedSessionIdx.clear();
@@ -871,11 +848,18 @@ function deleteSelectedSessions() {
 }
 
 function afterSessionsChanged(toastMsg) {
-  document.getElementById('totalRec').textContent = sessions.length;
-  const todayTotal = sessions.reduce((s, ses) => s + ses.totalHabits, 0);
+  saveData(); // localStorageに自動保存
+  
+  // 今日の統計を計算
+  const startOfToday = new Date().setHours(0,0,0,0);
+  const todaySessions = sessions.filter(s => s.startTime >= startOfToday);
+  const todayTotal = todaySessions.reduce((s, ses) => s + ses.totalHabits, 0);
+  const todayAvgRate = todaySessions.length > 0 ? Math.round(todaySessions.reduce((s, ses) => s + ses.rate, 0) / todaySessions.length) : 0;
+  
+  document.getElementById('totalRec').textContent = todaySessions.length;
   document.getElementById('totalHabits').textContent = todayTotal;
-  const avgRate = sessions.length > 0 ? Math.round(sessions.reduce((s, ses) => s + ses.rate, 0) / sessions.length) : 0;
-  document.getElementById('habitRate').textContent = sessions.length > 0 ? avgRate + '%' : '—';
+  document.getElementById('habitRate').textContent = todaySessions.length > 0 ? todayAvgRate + '%' : '—';
+  
   renderHistory();
   if (sessions.length === 0) {
     document.getElementById('noAnalysis').style.display = 'block';
@@ -904,8 +888,7 @@ function renderAnalysis(session) {
     catCounts[cat] = (catCounts[cat] || 0) + count;
   });
   const maxCat = Math.max(1, ...Object.values(catCounts));
-  const catGrid = document.getElementById('catGrid');
-  catGrid.innerHTML = Object.entries(catCounts).map(([cat, count]) => `
+  document.getElementById('catGrid').innerHTML = Object.entries(catCounts).map(([cat, count]) => `
     <div class="cat-item">
       <div class="cat-name">${cat}</div>
       <div class="cat-num">${count}回</div>
@@ -939,7 +922,6 @@ function switchTab(btn, id) {
   document.getElementById('rk-content').style.display = id === 'rk' ? 'block' : 'none';
 }
 
-// ===== AI ADVICE =====
 async function generateAdvice() {
   if (!currentSession) { showToast('先に録音してください'); return; }
   const btn = document.getElementById('adviceBtn');
@@ -948,48 +930,81 @@ async function generateAdvice() {
   const catInfo = Object.entries(currentSession.habitCounts).map(([w,{count,cat}]) => `${w}(${cat}):${count}回`).join('、') || '口癖なし';
   try {
     const system = 'あなたは話し方改善コーチです。口癖分析結果から具体的で実践的なアドバイスを3〜4文で生成してください。日本語で、友達口調で若者向けに書いてください。';
-    const userText = `口癖データ：${catInfo}。総単語数:${currentSession.words}、口癖率:${currentSession.rate}%。具体的な改善アドバイスをください。`;
+    const userText = `口癖データ：${catInfo}。総単語数:${currentSession.words}、口癖率:${currentSession.rate}%。アドバイスをください。`;
     const text = await callGemini(system, userText, 400);
     document.getElementById('adviceText').textContent = text;
     const topCats = [...new Set(Object.values(currentSession.habitCounts).map(v => v.cat))].slice(0,3);
     document.getElementById('adviceTags').innerHTML = topCats.map(c => `<span class="tag">${c}</span>`).join('');
     btn.innerHTML = '✨ 再分析する';
-    btn.disabled = false;
   } catch (e) {
-    console.error('アドバイス生成エラー:', e);
-    document.getElementById('adviceText').textContent = 'エラーが発生しました。APIキーとネットワーク接続を確認してください。';
+    document.getElementById('adviceText').textContent = 'エラーが発生しました。ネットワーク接続を確認してください。';
     btn.innerHTML = '✨ もう一度試す';
-    btn.disabled = false;
   }
+  btn.disabled = false;
 }
 
-// ===== GROWTH =====
+// ===== GROWTH & GOALS =====
 function renderGrowthPage() {
+  // 今週の目標を計算
+  const d = new Date();
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // 月曜始まり
+  const startOfWeek = new Date(d.setDate(diff)).setHours(0,0,0,0);
+  const weekSessions = sessions.filter(s => s.startTime >= startOfWeek);
+  
+  const wCount = weekSessions.length;
+  const wGoal = Number(appSettings.goalCount);
+  document.getElementById('goalCountLabel').textContent = `録音回数（目標: ${wGoal}回）`;
+  document.getElementById('goalCountText').textContent = `${wCount} / ${wGoal}回`;
+  const countBar = document.getElementById('goalCountBar');
+  countBar.style.width = Math.min((wCount / wGoal) * 100, 100) + '%';
+  if (wCount >= wGoal) countBar.classList.add('success'); else countBar.classList.remove('success');
+
+  const rGoal = Number(appSettings.goalRate);
+  const wRateAvg = wCount > 0 ? Math.round(weekSessions.reduce((s, ses) => s + ses.rate, 0) / wCount) : 0;
+  document.getElementById('goalRateLabel').textContent = `平均口癖率（目標: ${rGoal}%以下）`;
+  document.getElementById('goalRateText').textContent = wCount > 0 ? `${wRateAvg}%` : '—';
+  const rateBar = document.getElementById('goalRateBar');
+  // 目標達成（率が目標以下）なら100%緑、超えていれば割合に応じてバーを短く
+  if (wCount === 0) {
+    rateBar.style.width = '0%';
+  } else if (wRateAvg <= rGoal) {
+    rateBar.style.width = '100%';
+    rateBar.classList.add('success');
+  } else {
+    // 例: 目標10%で現在20%の場合、50%の達成度
+    rateBar.style.width = Math.max(0, 100 - ((wRateAvg - rGoal) / rGoal * 100)) + '%';
+    rateBar.classList.remove('success');
+  }
+
+  // グラフと全体の統計
   const ctx = document.getElementById('growthChart');
-  if (!ctx) return;
-  const labels = sessions.map((s,i) => `録音${sessions.length-i}`).reverse();
-  const rates = sessions.map(s => s.rate).reverse();
-  if (chartInst) { chartInst.destroy(); chartInst = null; }
-  if (sessions.length === 0) return;
-  chartInst = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{label:'口癖率(%)',data:rates,borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.1)',fill:true,tension:0.4,pointBackgroundColor:'#2563eb',pointRadius:5}]
-    },
-    options: {
-      responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false}},
-      scales:{y:{min:0,ticks:{callback:v=>v+'%',font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}},x:{ticks:{font:{size:10}},grid:{display:false}}}
-    }
-  });
+  if (ctx && sessions.length > 0) {
+    const labels = sessions.map((s,i) => `録音${sessions.length-i}`).reverse();
+    const rates = sessions.map(s => s.rate).reverse();
+    if (chartInst) chartInst.destroy();
+    chartInst = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{label:'口癖率(%)',data:rates,borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.1)',fill:true,tension:0.4,pointBackgroundColor:'#2563eb',pointRadius:5}]
+      },
+      options: {
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{y:{min:0,ticks:{callback:v=>v+'%',font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}},x:{ticks:{font:{size:10}},grid:{display:false}}}
+      }
+    });
+  }
+  
   document.getElementById('g-rec').textContent = sessions.length;
   const totalDur = sessions.reduce((s, ses) => s + ses.duration, 0);
   document.getElementById('g-time').textContent = Math.round(totalDur / 60) + '分';
   if (sessions.length >= 2) {
-    const improve = sessions[sessions.length-1].rate - sessions[0].rate;
-    document.getElementById('g-improve').textContent = (improve > 0 ? '+' : '') + improve + '%';
+    const improve = sessions[0].rate - sessions[sessions.length-1].rate; // 最新 - 最古 (減少している方が良い)
+    document.getElementById('g-improve').textContent = (improve > 0 ? '改善' : '') + improve + '%';
   }
+  
   const allCounts = {};
   sessions.forEach(s => Object.entries(s.habitCounts).forEach(([w, {count, cat}]) => {
     if (!allCounts[w]) allCounts[w] = {count:0, cat};
@@ -1000,11 +1015,6 @@ function renderGrowthPage() {
   gh.innerHTML = '<div class="card-title">よく出る口癖</div>' + (sorted.length ? sorted.map(([w, {count, cat}]) =>
     `<div class="ranking-item"><div class="rank-left"><span class="habit-badge b-blue">${cat}</span><span class="rank-word">${w}</span></div><span class="count-pill">${count}</span></div>`
   ).join('') : '<p style="font-size:13px;color:var(--text3)">まだデータがありません。</p>');
-  document.getElementById('streakNum').textContent = sessions.length + '回記録';
-  const days = ['月','火','水','木','金','土','日'];
-  document.getElementById('streakDays').innerHTML = days.map((d, i) =>
-    `<div class="streak-day ${i < Math.min(sessions.length, 7) ? 'streak-active' : 'streak-inactive'}">${d}</div>`
-  ).join('');
 }
 
 // ===== TYPE DIAGNOSIS =====
@@ -1013,6 +1023,7 @@ async function runDiagnosis() {
   const btn = document.getElementById('diagBtn');
   btn.innerHTML = '<span class="loading-dots"><span></span><span></span><span></span></span> 診断中...';
   btn.disabled = true;
+  
   const allCounts = {};
   sessions.forEach(s => Object.entries(s.habitCounts).forEach(([w, {count, cat}]) => {
     if (!allCounts[cat]) allCounts[cat] = 0;
@@ -1020,19 +1031,37 @@ async function runDiagnosis() {
   }));
   const catSummary = Object.entries(allCounts).map(([c, n]) => `${c}:${n}回`).join('、') || '口癖なし';
   const totalWords = sessions.reduce((s, ses) => s + (ses.words || 0), 0);
+  
   try {
-    const system = `あなたは話し方タイプ診断の専門家です。口癖データからE/L（感情/論理）、A/C（積極/慎重）、D/S（詳細/簡潔）、F/O（感情表現/客観）を0〜100の数値で判定し、16タイプ（EADF,EADO,EASF,EASO,ECDF,ECDO,ECSF,ECSO,LADF,LADO,LASF,LASO,LCDF,LCDO,LCSF,LCSO）のうち1つを決定してください。必ずJSON形式のみで返答してください（Markdownなし）:{"type":"XXXX","name":"タイプ名","description":"一言説明","el":65,"ac":40,"ds":55,"fo":30,"strengths":["強み1","強み2","強み3"],"improvements":["改善1","改善2"]}`;
+    const system = `あなたは話し方タイプ診断の専門家です。提供された口癖データと総単語数から、話し方の傾向を以下の4つの軸でそれぞれ0〜100の数値で判定してください。
+・言い切り方（dh）：0(断定型D)〜100(調整型H)
+・話の組み立て（st）：0(整理型S)〜100(展開型T)
+・説明の仕方（cg）：0(具体型C)〜100(概括型G)
+・言葉の温度（ef）：0(感情型E)〜100(事実型F)
+
+判定した4つの軸の組み合わせにより、以下の16タイプから1つを決定してください。
+DSCE: 情熱プレゼンター, DSCF: 論理ナビゲーター, DSGE: ビジョンリーダー, DSGF: 戦略アナリスト
+DTCE: エピソードメーカー, DTCF: 情報コネクター, DTGE: アイデアスパーク, DTGF: トレンドウォッチャー
+HSCE: 共感ストーリーテラー, HSCF: 丁寧な解説者, HSGE: ソフトビジョナリー, HSGF: 冷静な分析家
+HTCE: 感性クリエイター, HTCF: 探究レポーター, HTGE: ひらめきトーカー, HTGF: 情報エクスプローラー
+
+必ずJSON形式のみで返答してください（Markdownなし）:{"type":"XXXX","name":"タイプ名","description":"一言説明","dh":65,"st":40,"cg":55,"ef":30,"strengths":["強み1","強み2"],"improvements":["改善1","改善2"]}`;
+    
     const userText = `口癖データ：${catSummary}。総単語数:${totalWords}、録音回数:${sessions.length}回。`;
     let text = await callGemini(system, userText, 500);
     text = text.replace(/```json|```/g, '').trim();
     const result = JSON.parse(text);
+    
     document.getElementById('typeCode').textContent = result.type || '——';
     document.getElementById('typeName').textContent = result.name || '不明';
     document.getElementById('typeSub').textContent = result.description || '';
-    document.getElementById('ax-el').style.width = (result.el || 50) + '%';
-    document.getElementById('ax-ac').style.width = (result.ac || 50) + '%';
-    document.getElementById('ax-ds').style.width = (result.ds || 50) + '%';
-    document.getElementById('ax-fo').style.width = (result.fo || 50) + '%';
+    
+    // プログレスバーの反映（値が0に近いほど左、100に近いほど右に伸びる）
+    document.getElementById('ax-dh').style.width = (result.dh !== undefined ? result.dh : 50) + '%';
+    document.getElementById('ax-st').style.width = (result.st !== undefined ? result.st : 50) + '%';
+    document.getElementById('ax-cg').style.width = (result.cg !== undefined ? result.cg : 50) + '%';
+    document.getElementById('ax-ef').style.width = (result.ef !== undefined ? result.ef : 50) + '%';
+    
     if (result.strengths?.length) {
       document.getElementById('typeStrengths').style.display = 'block';
       document.getElementById('strengthList').innerHTML = result.strengths.map(s =>
@@ -1045,47 +1074,46 @@ async function runDiagnosis() {
     }
     showToast(`診断完了！あなたは ${result.name} です`);
   } catch (e) {
-    console.error('診断エラー:', e);
     showToast('診断に失敗しました。もう一度お試しください。');
   }
   btn.innerHTML = '🔮 話し方タイプを診断する';
   btn.disabled = false;
 }
 
-// ===== UTILS =====
-function getAllHabits() {
-  return Object.entries(habitRegistry).map(([word, cat]) => ({word, cat}));
-}
+// ===== UTILS & MODALS =====
+function getAllHabits() { return Object.entries(habitRegistry).map(([word, cat]) => ({word, cat})); }
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2800);
 }
-function showModal() {
-  document.getElementById('habitModal').classList.add('show');
-  renderHabitList();
-}
+
+// Habit Dictionary Modal
+function showModal() { document.getElementById('habitModal').classList.add('show'); renderHabitList(); }
 function closeModal() { document.getElementById('habitModal').classList.remove('show'); }
 function addHabit() {
   const word = document.getElementById('habitInput').value.trim();
   if (!word) { showToast('口癖を入力してください'); return; }
   const cat = document.getElementById('habitCat').value;
   habitRegistry[word] = cat;
+  saveData();
   showToast(`「${word}」を追加しました！`);
   document.getElementById('habitInput').value = '';
   renderHabitList();
 }
 function deleteHabitWord(word) {
-  if (!confirm(`「${word}」を口癖一覧から削除しますか？`)) return;
+  if (!confirm(`「${word}」を削除しますか？`)) return;
   delete habitRegistry[word];
+  saveData();
   showToast(`「${word}」を削除しました`);
   renderHabitList();
 }
 function resetHabitsToDefault() {
-  if (!confirm('登録されている口癖を初期状態にリセットしますか？\n追加・編集した内容はすべて失われます。')) return;
+  if (!confirm('初期状態にリセットしますか？')) return;
   habitRegistry = buildDefaultHabitRegistry();
-  showToast('口癖を初期状態にリセットしました');
+  saveData();
+  showToast('リセットしました');
   renderHabitList();
 }
 function renderHabitList() {
@@ -1107,10 +1135,71 @@ function renderHabitList() {
     return `<div class="h-item" style="cursor:default">
       <span class="habit-badge" style="background:${color}22;color:${color};flex-shrink:0">${cat}</span>
       <div class="h-info"><div class="h-title">${word}</div></div>
-      <button onclick="deleteHabitWord('${safeWord}')" title="削除" style="border:none;background:#fee2e2;color:#dc2626;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:12px;flex-shrink:0">✕</button>
+      <button onclick="deleteHabitWord('${safeWord}')" style="border:none;background:#fee2e2;color:#dc2626;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:12px;flex-shrink:0">✕</button>
     </div>`;
   }).join('');
 }
+
+// Settings Modal
+function showSettingsModal() {
+  document.getElementById('setGoalCount').value = appSettings.goalCount;
+  document.getElementById('setGoalRate').value = appSettings.goalRate;
+  document.getElementById('setThreshold').value = appSettings.habitThreshold;
+  document.getElementById('setReminderOn').checked = appSettings.reminderOn;
+  document.getElementById('setReminderTime').value = appSettings.reminderTime;
+  document.getElementById('settingsModal').classList.add('show');
+}
+function closeSettingsModal() { document.getElementById('settingsModal').classList.remove('show'); }
+function saveSettings() {
+  appSettings.goalCount = document.getElementById('setGoalCount').value;
+  appSettings.goalRate = document.getElementById('setGoalRate').value;
+  appSettings.habitThreshold = document.getElementById('setThreshold').value;
+  appSettings.reminderOn = document.getElementById('setReminderOn').checked;
+  appSettings.reminderTime = document.getElementById('setReminderTime').value;
+  saveData();
+  renderGrowthPage();
+  showToast('設定を保存しました！');
+  closeSettingsModal();
+}
+
+// Notifications API
+async function requestNotificationPermission() {
+  const cb = document.getElementById('setReminderOn');
+  if (cb.checked) {
+    if (!('Notification' in window)) {
+      showToast('お使いのブラウザは通知に対応していません');
+      cb.checked = false;
+      return;
+    }
+    if (Notification.permission === 'default') {
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') {
+        cb.checked = false;
+        showToast('通知が許可されませんでした');
+      }
+    } else if (Notification.permission === 'denied') {
+      cb.checked = false;
+      showToast('ブラウザの設定で通知がブロックされています');
+    }
+  }
+}
+
+// リマインダーの定期チェック (1分ごと)
+setInterval(() => {
+  if (!appSettings.reminderOn || Notification.permission !== 'granted') return;
+  const now = new Date();
+  const currentHM = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+  const lastNotified = localStorage.getItem('km_last_notified');
+  const todayDate = now.toLocaleDateString();
+
+  if (currentHM === appSettings.reminderTime && lastNotified !== todayDate) {
+    new Notification('くちぐせみっけ 🎙', {
+      body: '今日の話し方練習をしましょう！',
+      icon: '🎙'
+    });
+    localStorage.setItem('km_last_notified', todayDate);
+  }
+}, 60000);
 </script>
 </body>
 </html>
