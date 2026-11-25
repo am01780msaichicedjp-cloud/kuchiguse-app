@@ -33,6 +33,9 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .page.active{display:block}
 .card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
 .card-title{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.privacy-notice{background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:11px 13px;margin-bottom:12px;display:flex;align-items:flex-start;gap:9px;color:#92400e;font-size:12px;line-height:1.6}
+.privacy-icon{font-size:16px;flex-shrink:0;line-height:1.4}
+.privacy-notice strong{display:block;font-size:12px;margin-bottom:2px;color:#78350f}
 .record-hero{background:linear-gradient(135deg,#1d4ed8,#3b82f6,#60a5fa);border-radius:var(--radius);padding:20px 20px 16px;margin-bottom:12px;text-align:center;position:relative;overflow:hidden}
 .record-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;background:rgba(255,255,255,.07);border-radius:50%}
 .record-hint{color:rgba(255,255,255,.8);font-size:13px;margin-bottom:18px}
@@ -96,6 +99,12 @@ mark.habit{border-radius:3px;padding:0 2px}
 .advice-icon{width:30px;height:30px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px}
 .advice-title{font-size:13px;font-weight:700;color:#1e3a8a}
 .advice-text{font-size:13px;color:#1e3a5f;line-height:1.75}
+.reanalyze-box{margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.reanalyze-hint{font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:8px}
+.analysis-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px}
+.analysis-badge.raw{background:#f1f5f9;color:#475569}
+.analysis-badge.ctx{background:#dcfce7;color:#15803d}
+.context-note{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;border-radius:9px;padding:8px 10px;font-size:12px;line-height:1.5;margin-bottom:10px;display:none}
 .tag{display:inline-block;background:var(--primary);color:#fff;border-radius:20px;padding:2px 9px;font-size:11px;margin:6px 3px 0 0}
 .btn{padding:9px 18px;border:none;border-radius:10px;font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
 .btn-primary{background:var(--primary);color:#fff}
@@ -179,6 +188,14 @@ mark.habit{border-radius:3px;padding:0 2px}
       ⚠️ マイクへのアクセス許可が必要です。ブラウザのアドレスバーから許可してください。
     </div>
 
+    <div class="privacy-notice">
+      <span class="privacy-icon">🔒</span>
+      <div>
+        <strong>録音前のご注意（個人情報などについて）</strong>
+        <p>AIによる分析を行うため、録音中は氏名・住所・電話番号・メールアドレス・パスワードなどの個人情報や機密情報は話さないでください。</p>
+      </div>
+    </div>
+
     <div class="record-hero">
       <div class="record-hint" id="recHint">タップして録音開始</div>
       <button class="record-btn" id="recordBtn" onclick="toggleRecord()">
@@ -251,8 +268,16 @@ mark.habit{border-radius:3px;padding:0 2px}
     </div>
     <div id="analysisContent" style="display:none">
       <div class="card">
-        <div class="card-title">文字起こし</div>
+        <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
+          <span>文字起こし</span>
+          <span class="analysis-badge raw" id="analysisModeBadge">⚡ 簡易判定</span>
+        </div>
+        <div class="context-note" id="contextNoteBox"></div>
         <p id="transcriptDisplay" style="font-size:13px;line-height:1.9"></p>
+        <div class="reanalyze-box">
+          <p class="reanalyze-hint">文脈上必ず必要な表現まで誤って口癖と判定された場合、AIが文脈を読んで本当に口癖か判定し直します。</p>
+          <button class="btn btn-primary btn-full" id="reanalyzeBtn" onclick="reanalyzeWithContext()">🔍 文脈からもう一度きちんと分析する</button>
+        </div>
       </div>
       <div class="stats-row">
         <div class="stat-card"><div class="stat-num" id="an-words">0</div><div class="stat-label">総単語数</div></div>
@@ -368,10 +393,15 @@ mark.habit{border-radius:3px;padding:0 2px}
     </div>
     <input class="m-input" id="habitInput" placeholder="例：ぶっちゃけ、要は" maxlength="20">
     <select class="m-select" id="habitCat">
-      <option value="相づち系">相づち系</option>
-      <option value="曖昧表現系">曖昧表現系</option>
-      <option value="若者言葉系">若者言葉系</option>
       <option value="ビジネス系">ビジネス系</option>
+      <option value="強調系">強調系</option>
+      <option value="自信がない系">自信がない系</option>
+      <option value="若者言葉系">若者言葉系</option>
+      <option value="相づち系">相づち系</option>
+      <option value="言い訳・否定系">言い訳・否定系</option>
+      <option value="無意識系">無意識系</option>
+      <option value="話しつなぎ系">話しつなぎ系</option>
+      <option value="曖昧表現系">曖昧表現系</option>
       <option value="その他">その他</option>
     </select>
     <div style="display:flex;gap:8px;margin-bottom:18px">
@@ -447,15 +477,12 @@ let appSettings = {
 };
 
 function loadData() {
-  // 設定の読み込み
   const savedSettings = localStorage.getItem('km_settings');
   if (savedSettings) appSettings = { ...appSettings, ...JSON.parse(savedSettings) };
   
-  // 録音履歴の読み込み
   const savedSessions = localStorage.getItem('km_sessions');
   if (savedSessions) sessions = JSON.parse(savedSessions);
   
-  // 口癖辞書の読み込み
   const savedHabits = localStorage.getItem('km_habits');
   if (savedHabits) {
     habitRegistry = JSON.parse(savedHabits);
@@ -472,15 +499,15 @@ function saveData() {
 
 // ===== HABIT DICTIONARY =====
 const HABITS = {
-  '相づち系': ['えっと','あの','その','なんか','うーん','そうですね','なるほど','たしかに','そうそう'],
-  '話しつなぎ系': ['とりあえず','一応','ちなみに','ていうか','というか','だから','なので','それで','でね','まあ','ということで','うん','それから','こんな感じで','そんな感じで','えー','はい','じゃあ'],
+  '相づち系': ['そうですね','なるほど','たしかに','そうそう','ね。'],
+  '話しつなぎ系': ['で、','まあ','えっと','ええと','あの','その','なんか','うーん','とりあえず','一応','ちなみに','ていうか','というか','だから','なので','それで','でね','まあ','ということで','うん','それから','こんな感じで','そんな感じで','えー','はい','じゃあ'],
   '曖昧表現系': ['みたいな','たぶん','おそらく','なんとなく','若干','ちょっと','だいたい','結構','知らんけど'],
   '強調系': ['めっちゃ','すごく','超','マジで','ガチで','本当に','かなり','圧倒的に','ものすごく','なんだ','やっぱ','やはり'],
   '否定・言い訳系': ['でも','いや','とはいえ','ただ','別に','しょうがない','仕方ない','どうせ'],
   '自信がない系': ['たぶんですけど','かもしれない','なんとも言えない','そんな感じ','微妙','どうなんだろう','と思います'],
   '若者言葉系': ['えぐい','やばい','それな','しんどい','ワンチャン','あざす','ゆうて','じゃね','待って','しぬ','むり','おもろ','そうなん？','しゃあない'],
   'ビジネス系': ['要するに','端的に言うと','結論から言うと','つまり','現状','基本的に','逆に','であります','のほうを','の方を'],
-  '無意識系': ['なるほどですね','ですよね','そうなんですよ','なんですよね','って感じ','みたいな感じ','じゃないですか','と思うんですけど','以上です','ですね','さあ','えっ','ね。']
+  '無意識系': ['なるほどですね','ですよね','そうなんですよ','なんですよね','って感じ','みたいな感じ','じゃないですか','と思うんですけど','以上です','ですね','さあ','えっ']
 };
 const CAT_COLORS = {'相づち系':'#2563eb','話しつなぎ系':'#059669','曖昧表現系':'#7c3aed','強調系':'#dc2626','否定・言い訳系':'#db2777','自信がない系':'#d97706','若者言葉系':'#16a34a','ビジネス系':'#64748b','無意識系':'#9333ea','独り相づち':'#0891b2','その他':'#475569'};
 const SOLO_AIZUCHI_WORDS = ['うん', 'はい'];
@@ -568,7 +595,7 @@ async function generateAiTopic() {
 window.addEventListener('load', () => {
   loadData();
   nextTopic();
-  afterSessionsChanged(); // ロード時に履歴やグラフを描画
+  afterSessionsChanged();
 });
 
 // ===== Gemini API helper =====
@@ -709,27 +736,102 @@ function setupSpeechRecognition() {
 function renderLiveTranscript(finalText, interim) {
   const el = document.getElementById('liveText');
   let html = highlightHabits(finalText);
-  if (interim) html += `<span style="color:var(--text3)">${interim}</span>`;
+  if (interim) html += `<span style="color:var(--text3)">${escapeHtml(interim)}</span>`;
   html += '<span class="live-cursor"></span>';
   el.innerHTML = html;
 }
 
+function escapeHtml(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function getMarkClass(cat) {
+  if (cat === '相づち系') return 'mark-blue';
+  if (cat === '曖昧表現系') return 'mark-purple';
+  if (cat === '強調系') return 'mark-red';
+  if (cat === '否定・言い訳系') return 'mark-pink';
+  if (cat === SOLO_AIZUCHI_CAT) return 'mark-cyan';
+  return 'mark-orange';
+}
+
+function highlightSpans(text, spans) {
+  if (!spans || spans.length === 0) return escapeHtml(text);
+  const sorted = spans.slice().sort((a, b) => a.start - b.start);
+  let html = '';
+  let cursor = 0;
+  sorted.forEach(s => {
+    if (s.start < cursor || s.end > text.length) return;
+    html += escapeHtml(text.slice(cursor, s.start));
+    html += `<mark class="habit ${getMarkClass(s.cat)}">${escapeHtml(text.slice(s.start, s.end))}</mark>`;
+    cursor = s.end;
+  });
+  html += escapeHtml(text.slice(cursor));
+  return html;
+}
+
 function highlightHabits(text) {
-  let result = text;
-  const allHabits = getAllHabits();
-  allHabits.sort((a, b) => b.word.length - a.word.length);
-  allHabits.forEach(({word, cat}) => {
-    const occurrences = text.split(word).length - 1;
-    // ユーザーが設定した閾値以上の出現でハイライト
-    if (occurrences < appSettings.habitThreshold) return;
-    const color = cat === '相づち系' ? 'mark-blue' : cat === '曖昧表現系' ? 'mark-purple' : cat === '強調系' ? 'mark-red' : cat === '否定・言い訳系' ? 'mark-pink' : 'mark-orange';
-    result = result.split(word).join(`<mark class="habit ${color}">${word}</mark>`);
+  const candidates = findCandidateOccurrences(text);
+  const counts = {};
+  candidates.forEach(c => { counts[c.word] = (counts[c.word] || 0) + 1; });
+  const threshold = Number(appSettings.habitThreshold);
+  const activeSpans = candidates.filter(c => counts[c.word] >= threshold);
+  return highlightSpans(text, activeSpans);
+}
+
+function findCandidateOccurrences(text) {
+  const candidates = [];
+  const occupied = new Array(text.length).fill(false);
+
+  const allHabits = getAllHabits().sort((a, b) => b.word.length - a.word.length);
+  allHabits.forEach(({ word, cat }) => {
+    if (!word) return;
+    let idx = 0;
+    while ((idx = text.indexOf(word, idx)) !== -1) {
+      let overlap = false;
+      for (let p = idx; p < idx + word.length; p++) {
+        if (occupied[p]) { overlap = true; break; }
+      }
+      if (!overlap) {
+        for (let p = idx; p < idx + word.length; p++) occupied[p] = true;
+        candidates.push({ start: idx, end: idx + word.length, word, cat });
+      }
+      idx += word.length;
+    }
   });
-  SOLO_AIZUCHI_WORDS.forEach(word => {
-    if (countSoloAizuchi(text, word) < appSettings.habitThreshold) return;
-    result = result.split(/([。！？])/).map(seg => seg.trim() === word ? `<mark class="habit mark-cyan">${word}</mark>` : seg).join('');
+
+  let segStart = 0;
+  const parts = text.split(/([。！？])/);
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    const trimmed = part.trim();
+    if (SOLO_AIZUCHI_WORDS.includes(trimmed)) {
+      const localIdx = part.indexOf(trimmed);
+      const start = segStart + localIdx;
+      const end = start + trimmed.length;
+      let overlap = false;
+      for (let p = start; p < end; p++) {
+        if (occupied[p]) { overlap = true; break; }
+      }
+      if (!overlap) {
+        for (let p = start; p < end; p++) occupied[p] = true;
+        candidates.push({ start, end, word: trimmed, cat: SOLO_AIZUCHI_CAT });
+      }
+    }
+    segStart += part.length;
+  }
+
+  candidates.sort((a, b) => a.start - b.start);
+  return candidates.map((c, idx) => {
+    const ctxStart = Math.max(0, c.start - 15);
+    const ctxEnd = Math.min(text.length, c.end + 15);
+    const snippet =
+      (ctxStart > 0 ? '…' : '') +
+      text.slice(ctxStart, c.start) +
+      `【${c.word}】` +
+      text.slice(c.end, ctxEnd) +
+      (ctxEnd < text.length ? '…' : '');
+    return { ...c, id: idx, snippet };
   });
-  return result;
 }
 
 function registerHabitHit(word, cat, timeSec) {
@@ -738,7 +840,6 @@ function registerHabitHit(word, cat, timeSec) {
   const m = String(Math.floor(timeSec / 60)).padStart(2, '0');
   const s = String(timeSec % 60).padStart(2, '0');
   currentSession.timeline.push({word, cat, time: m + ':' + s});
-  // 設定した閾値に達したタイミングでリアルタイム通知
   if (currentSession.habitCounts[word].count === Number(appSettings.habitThreshold)) {
     const lh = document.getElementById('liveHabits');
     const pill = document.createElement('span');
@@ -766,13 +867,13 @@ function finishSession(text) {
   currentSession.duration = seconds;
   const confirmedHabits = {};
   Object.entries(currentSession.habitCounts).forEach(([word, data]) => {
-    // ユーザー設定の閾値をクリアしたものだけを保存
     if (data.count >= appSettings.habitThreshold) confirmedHabits[word] = data;
   });
   currentSession.habitCounts = confirmedHabits;
   currentSession.timeline = currentSession.timeline.filter(item => confirmedHabits[item.word]);
   currentSession.totalHabits = Object.values(currentSession.habitCounts).reduce((s, v) => s + v.count, 0);
   currentSession.rate = currentSession.words > 0 ? Math.round((currentSession.totalHabits / currentSession.words) * 100) : 0;
+  currentSession.contextAnalyzed = false;
   
   sessions.unshift(currentSession);
   afterSessionsChanged(`録音完了！口癖 ${currentSession.totalHabits}回 検出`);
@@ -807,7 +908,7 @@ function renderHistory() {
     const deleteBtn = historySelectMode ? '' : `<button onclick="deleteSingleSession(event, ${i})" title="削除" style="border:none;background:none;color:var(--text3);font-size:16px;cursor:pointer;padding:4px 4px 4px 8px;flex-shrink:0">🗑</button>`;
     return `<div class="h-item" onclick="${clickAction}">
       ${icon}
-      <div class="h-info"><div class="h-title">録音 ${sessions.length - i}</div><div class="h-meta">${time} · ${dur}</div></div>
+      <div class="h-info"><div class="h-title">録音 ${sessions.length - i}${s.contextAnalyzed ? ' <span style="font-size:10px;color:#15803d;font-weight:700">✓文脈分析済</span>' : ''}</div><div class="h-meta">${time} · ${dur}</div></div>
       <div style="display:flex;align-items:center"><div><div class="h-rate">${s.rate}%</div><div class="h-rlabel">口癖率</div></div>${deleteBtn}</div>
     </div>`;
   }).join('');
@@ -834,8 +935,11 @@ function updateHistoryBulkBar() {
 function deleteSingleSession(event, i) {
   event.stopPropagation();
   if (!confirm('この録音データを削除しますか？')) return;
+  const deleted = sessions[i];
   sessions.splice(i, 1);
+  if (currentSession === deleted) currentSession = sessions[0] || null;
   afterSessionsChanged('録音を削除しました');
+  if (currentSession) renderAnalysis(currentSession);
 }
 
 function deleteSelectedSessions() {
@@ -844,13 +948,14 @@ function deleteSelectedSessions() {
   sessions = sessions.filter((_, i) => !selectedSessionIdx.has(i));
   historySelectMode = false;
   selectedSessionIdx.clear();
+  if (!sessions.includes(currentSession)) currentSession = sessions[0] || null;
   afterSessionsChanged('選択した録音を削除しました');
+  if (currentSession) renderAnalysis(currentSession);
 }
 
 function afterSessionsChanged(toastMsg) {
-  saveData(); // localStorageに自動保存
+  saveData();
   
-  // 今日の統計を計算
   const startOfToday = new Date().setHours(0,0,0,0);
   const todaySessions = sessions.filter(s => s.startTime >= startOfToday);
   const todayTotal = todaySessions.reduce((s, ses) => s + ses.totalHabits, 0);
@@ -870,15 +975,41 @@ function afterSessionsChanged(toastMsg) {
 }
 
 function loadSession(i) {
+  currentSession = sessions[i];
   renderAnalysis(sessions[i]);
   switchPage('analysis', document.querySelector('.nav-item:nth-child(2)'));
 }
 
 // ===== ANALYSIS =====
 function renderAnalysis(session) {
+  currentSession = session;
   document.getElementById('noAnalysis').style.display = 'none';
   document.getElementById('analysisContent').style.display = 'block';
-  document.getElementById('transcriptDisplay').innerHTML = highlightHabits(session.text);
+
+  const badge = document.getElementById('analysisModeBadge');
+  const noteBox = document.getElementById('contextNoteBox');
+  const reBtn = document.getElementById('reanalyzeBtn');
+
+  if (session.contextAnalyzed) {
+    document.getElementById('transcriptDisplay').innerHTML = highlightSpans(session.text, session.habitSpans || []);
+    badge.textContent = '✅ 文脈AI分析済み';
+    badge.className = 'analysis-badge ctx';
+    if (session.contextNote) {
+      noteBox.textContent = `📝 ${session.contextNote}`;
+      noteBox.style.display = 'block';
+    } else {
+      noteBox.style.display = 'none';
+    }
+    reBtn.innerHTML = '🔍 文脈からもう一度再分析する';
+  } else {
+    document.getElementById('transcriptDisplay').innerHTML = highlightHabits(session.text);
+    badge.textContent = '⚡ 簡易判定';
+    badge.className = 'analysis-badge raw';
+    noteBox.style.display = 'none';
+    reBtn.innerHTML = '🔍 文脈からもう一度きちんと分析する';
+  }
+  reBtn.disabled = false;
+
   document.getElementById('an-words').textContent = session.words || 0;
   document.getElementById('an-count').textContent = session.totalHabits;
   document.getElementById('an-rate').textContent = session.rate + '%';
@@ -915,6 +1046,198 @@ function renderAnalysis(session) {
   document.getElementById('adviceBtn').disabled = false;
 }
 
+async function reanalyzeWithContext() {
+  if (!currentSession || !currentSession.text) {
+    showToast('先に録音してください');
+    return;
+  }
+  const candidates = findCandidateOccurrences(currentSession.text);
+  if (candidates.length === 0) {
+    currentSession.contextAnalyzed = true;
+    currentSession.habitSpans = [];
+    currentSession.habitCounts = {};
+    currentSession.timeline = [];
+    currentSession.totalHabits = 0;
+    currentSession.rate = 0;
+    currentSession.contextNote = '口癖の候補となる表現は見つかりませんでした。';
+    afterSessionsChanged('文脈分析完了！口癖は検出されませんでした');
+    renderAnalysis(currentSession);
+    return;
+  }
+
+  const btn = document.getElementById('reanalyzeBtn');
+  btn.innerHTML = '<span class="loading-dots"><span></span><span></span><span></span></span> 文脈を分析中...';
+  btn.disabled = true;
+
+  try {
+    const candidateLines = candidates
+      .map(c => `${c.id}: 「${c.word}」(${c.cat}) ／ 文脈: ${c.snippet}`)
+      .join('\n');
+
+    const system = `あなたは日本語の話し方・口癖分析の専門家です。
+文字起こしテキストと、機械的に検出された「口癖候補リスト」を確認し、前後の文脈から「本当の口癖（無意識の言い癖・フィラー・不要なつなぎ言葉・曖昧な口癖）」に該当する候補のIDだけを選んでください。
+
+
+# 1. 最も重要な判定方針
+
+単語や表現が出現しただけで、口癖と判定してはいけません。
+
+必ず対象表現の前後の文脈を確認し、その表現が会話の中でどのような役割を果たしているかを判断してください。
+
+判定においては、次の2点を明確に区別してください。
+
+- **通常の表現：** 文法的・意味的に必要であり、発言内容を正確に伝えるために自然に使用されているもの。
+- **口癖：** 発言内容を伝えるために必ずしも必要ではなく、思考中の間を埋めたり、話をつないだり、無意識に繰り返したりするもの。
+
+単に削除できるという理由だけで口癖と判断してはいけません。日本語では、削除可能でも自然な強調やニュアンスの表現として使われる言葉があるためです。
+
+# 2. 口癖として判定する基準
+
+以下の特徴を総合的に考慮し、口癖としての使用が明確な場合に限り、該当するIDを選択してください。
+
+- 特に必要がない場面でも習慣的に挿入されている。
+- 思考中の間を埋めるために使用されている。
+- 発言の始まりや途中で、次の言葉につなぐために使用されている。
+- 同じような場面や状況で繰り返し使用されている。
+- 発言内容そのものよりも、話し方の癖として機能している。
+- 同じ意味や役割の表現を必要以上に繰り返している。
+- 文脈上、なくても発言の本質的な意味が変わらない。
+
+
+# 3. 口癖ではない表現の除外基準
+
+以下に該当する場合は、原則として口癖に含めないでください。
+
+文法的に必要な表現
+
+- 「〇〇でも〇〇でも使われています」の「でも」
+- 「それでも」「いつでも」「なんでも」の一部
+- 「ただし、条件があります」の「ただ」
+- 「なんだろう」の中の「なん」や「なんだ」
+
+
+# 4. 口癖として判定できる表現の例
+
+以下は、口癖として使用される可能性がある表現です。
+
+- 「えっと」「あのー」「うーん」など：考える時間を埋めるフィラー
+- 「まあ」「なんか」など：特に必要のない場面で習慣的に挿入される表現
+- 「というか」「ていうか」など：話をつなぐために繰り返し使用される表現
+- 「でも」など：文脈上必要ではないのに、発言の冒頭で習慣的に使用される表現
+- 「〜みたいな」「〜じゃないですか」など：必要以上に繰り返される語尾や言い回し
+- 「本当に」「結構」など：意味上必要ではない場面でも習慣的に使用される強調表現
+
+ただし、これらの表現であっても、文脈上自然で必要な使い方をしている場合は除外してください。
+
+上記はあくまで判定例であり、表現そのものを一律に口癖と認定するものではありません。
+
+# 5. 文字列の部分一致による誤検出の防止
+
+機械的な文字列検索によって検出された候補には、口癖とは無関係な誤一致が含まれる可能性があります。
+
+必ず、対象表現が実際にその表現として独立して使用されているかを確認してください。
+
+特に、以下の場合は口癖としてカウントしないでください。
+
+- 対象文字列が別の単語や表現の一部分として含まれているだけの場合。
+- 文字列が偶然一致しているだけの場合。
+- 助詞や語尾などと連続して一致し、別の意味になっている場合。
+- 対象表現として解釈すると、文法的・意味的に不自然になる場合。
+- 文字起こしの誤認識によって一致している可能性がある場合。
+
+また、「で、」「ね。」「じゃね」など、短い表現や他の単語と重なりやすい表現についても、特に慎重に判定してください。
+
+対象表現の前後の文字だけで機械的に判断せず、文法・単語の区切り・発言の意味・会話の流れを総合的に考慮してください。
+
+# 6. 候補ごとの独立した判定
+
+口癖候補リストに含まれる候補は、一つずつ独立して判定してください。
+
+- 同じ表現が複数回登場していても、各使用箇所の文脈を個別に確認してください。
+- 同じ表現でも、ある箇所は口癖、別の箇所は自然な表現という場合があります。
+- 一つの発言に複数の候補が含まれている場合も、それぞれ独立して判断してください。
+- 他の候補が口癖と判定されたことを理由に、関連する候補まで口癖と判定しないでください。
+- 文字起こしに存在しない候補や、使用箇所を特定できない候補は選択しないでください。
+
+# 7. 判断に迷う場合の方針
+
+口癖であると十分に判断できない場合は、無理に認定せず除外してください。
+
+特に、以下の場合は慎重に判断してください。
+
+- 前後の文脈が不足している。
+- 文字起こしの誤認識が疑われる。
+- 自然な日本語としての使用と、口癖としての使用の区別がつかない。
+- 一時的な言いよどみなのか、習慣的な癖なのか判断できない。
+
+推測で文脈を補完してはいけません。
+
+必ずJSON形式のみで返答してください（Markdownコードブロック不要）：
+{"habitIds":[0,2],"note":"誤検出を除外したポイントなどの短い要約（1文）"}`;
+
+    const userText = `【文字起こし全文】\n${currentSession.text}\n\n【口癖候補リスト】\n${candidateLines}`;
+    let text = await callGemini(system, userText, 1200);
+    text = text.replace(/```json|```/g, '').trim();
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) text = jsonMatch[0];
+    const result = JSON.parse(text);
+
+    const habitIdSet = new Set(Array.isArray(result.habitIds) ? result.habitIds.map(Number) : []);
+    const genuineCandidates = candidates.filter(c => habitIdSet.has(c.id));
+
+    const rawCounts = {};
+    genuineCandidates.forEach(c => {
+      if (!rawCounts[c.word]) rawCounts[c.word] = { count: 0, cat: c.cat };
+      rawCounts[c.word].count++;
+    });
+
+    const threshold = Number(appSettings.habitThreshold);
+    const confirmedHabits = {};
+    Object.entries(rawCounts).forEach(([word, data]) => {
+      if (data.count >= threshold) confirmedHabits[word] = data;
+    });
+
+    const confirmedSpans = genuineCandidates.filter(c => confirmedHabits[c.word]);
+
+    const oldTimesByWord = {};
+    (currentSession.timeline || []).forEach(item => {
+      if (!oldTimesByWord[item.word]) oldTimesByWord[item.word] = [];
+      oldTimesByWord[item.word].push(item.time);
+    });
+
+    currentSession.habitCounts = confirmedHabits;
+    currentSession.habitSpans = confirmedSpans.map(({ start, end, word, cat }) => ({ start, end, word, cat }));
+    currentSession.timeline = confirmedSpans.map(c => {
+      let time = oldTimesByWord[c.word]?.shift();
+      if (!time) {
+        const estSec = Math.round((c.start / Math.max(1, currentSession.text.length)) * (currentSession.duration || 0));
+        time = String(Math.floor(estSec / 60)).padStart(2, '0') + ':' + String(estSec % 60).padStart(2, '0');
+      }
+      return { word: c.word, cat: c.cat, time };
+    });
+
+    if (!currentSession.words) {
+      currentSession.words = currentSession.text
+        .replace(/[^\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\w]/g, ' ')
+        .split(/\s+/)
+        .filter(Boolean).length;
+    }
+
+    currentSession.totalHabits = Object.values(confirmedHabits).reduce((s, v) => s + v.count, 0);
+    currentSession.rate = currentSession.words > 0 ? Math.round((currentSession.totalHabits / currentSession.words) * 100) : 0;
+    currentSession.contextAnalyzed = true;
+    const excludedCount = Math.max(0, candidates.length - confirmedSpans.length);
+    currentSession.contextNote = result.note || `文脈判定により ${excludedCount}件を口癖対象外として整理しました。`;
+
+    afterSessionsChanged(`文脈分析完了！口癖 ${currentSession.totalHabits}回（${excludedCount}件除外）`);
+    renderAnalysis(currentSession);
+  } catch (e) {
+    showToast('文脈分析に失敗しました。もう一度お試しください');
+    btn.innerHTML = '🔍 文脈からもう一度きちんと分析する';
+    btn.disabled = false;
+  }
+}
+
 function switchTab(btn, id) {
   btn.closest('.tabs').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
@@ -945,10 +1268,9 @@ async function generateAdvice() {
 
 // ===== GROWTH & GOALS =====
 function renderGrowthPage() {
-  // 今週の目標を計算
   const d = new Date();
   const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // 月曜始まり
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
   const startOfWeek = new Date(d.setDate(diff)).setHours(0,0,0,0);
   const weekSessions = sessions.filter(s => s.startTime >= startOfWeek);
   
@@ -965,19 +1287,16 @@ function renderGrowthPage() {
   document.getElementById('goalRateLabel').textContent = `平均口癖率（目標: ${rGoal}%以下）`;
   document.getElementById('goalRateText').textContent = wCount > 0 ? `${wRateAvg}%` : '—';
   const rateBar = document.getElementById('goalRateBar');
-  // 目標達成（率が目標以下）なら100%緑、超えていれば割合に応じてバーを短く
   if (wCount === 0) {
     rateBar.style.width = '0%';
   } else if (wRateAvg <= rGoal) {
     rateBar.style.width = '100%';
     rateBar.classList.add('success');
   } else {
-    // 例: 目標10%で現在20%の場合、50%の達成度
     rateBar.style.width = Math.max(0, 100 - ((wRateAvg - rGoal) / rGoal * 100)) + '%';
     rateBar.classList.remove('success');
   }
 
-  // グラフと全体の統計
   const ctx = document.getElementById('growthChart');
   if (ctx && sessions.length > 0) {
     const labels = sessions.map((s,i) => `録音${sessions.length-i}`).reverse();
@@ -1001,7 +1320,7 @@ function renderGrowthPage() {
   const totalDur = sessions.reduce((s, ses) => s + ses.duration, 0);
   document.getElementById('g-time').textContent = Math.round(totalDur / 60) + '分';
   if (sessions.length >= 2) {
-    const improve = sessions[0].rate - sessions[sessions.length-1].rate; // 最新 - 最古 (減少している方が良い)
+    const improve = sessions[0].rate - sessions[sessions.length-1].rate;
     document.getElementById('g-improve').textContent = (improve > 0 ? '改善' : '') + improve + '%';
   }
   
@@ -1056,7 +1375,6 @@ HTCE: 感性クリエイター, HTCF: 探究レポーター, HTGE: ひらめき�
     document.getElementById('typeName').textContent = result.name || '不明';
     document.getElementById('typeSub').textContent = result.description || '';
     
-    // プログレスバーの反映（値が0に近いほど左、100に近いほど右に伸びる）
     document.getElementById('ax-dh').style.width = (result.dh !== undefined ? result.dh : 50) + '%';
     document.getElementById('ax-st').style.width = (result.st !== undefined ? result.st : 50) + '%';
     document.getElementById('ax-cg').style.width = (result.cg !== undefined ? result.cg : 50) + '%';
